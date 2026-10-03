@@ -117,6 +117,7 @@ def test_run_pipeline_synthetic(synthetic):
     data = run.run_pipeline(
         "VEO DEMO", "", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs",
         progress=lambda step, fraction, message: steps.append((step, fraction)), detector=SyntheticDetector(), min_confidence=0.0,
+        review_threshold=0.5,
     )
     assert json.loads((tmp_path / "tags" / "VEO-DEMO.json").read_text()) == data
     assert data["site"] == "VEO DEMO" and data["scan"] == "x.e57"
@@ -181,7 +182,8 @@ def test_run_pipeline_skips_text_on_device_plates(synthetic, monkeypatch):
             return out
 
     monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(PlateTextOcr()))
-    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector(), min_confidence=0.0)
+    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector(),
+                            min_confidence=0.0, review_threshold=0.5)
     assert [t["cabinet"] for t in data["tags"]] == ["H01 FEED", "H02 FEED", "unassigned"]
     data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs",
                             review_threshold=0.95, detector=SyntheticDetector(), min_confidence=0.0)

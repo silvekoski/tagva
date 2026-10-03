@@ -17,7 +17,7 @@ DEVICE_TYPE = "REX615"
 SWEEPS_SHARE = 0.9
 
 
-MIN_CONFIDENCE = 0.5
+MIN_CONFIDENCE = 0.85
 TILE_CONFIDENCE = 0.25
 
 
@@ -65,7 +65,7 @@ def run_pipeline(
     weights,
     tags_dir,
     docs_dir,
-    review_threshold=0.5,
+    review_threshold=0.9,
     merge_radius=0.2,
     cabinet_radius=2.0,
     min_confidence=MIN_CONFIDENCE,

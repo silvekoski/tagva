@@ -104,7 +104,7 @@ FastAPI's own `/docs` page must be off (`docs_url=None`, `redoc_url=None`), beca
 | GET | `/api/projects` | `{projects: [project labels with a tag file]}`. |
 | GET | `/api/raycast?sweep=sweep-NN&u=..&v=..` | `{anchor: {x, y, z} or null}`. The 3D point under pano pixel (u, v), from the depth grid (`box_anchor` with a small box). The tag editor uses it to place an anchor. |
 
-Defaults: `review_threshold` 0.5, `merge_radius` 0.2, `cabinet_radius` 2.0. Start: `.venv/bin/uvicorn pipeline.api:app --port 8000`.
+Defaults: `review_threshold` 0.9, `min_confidence` 0.85, `merge_radius` 0.2, `cabinet_radius` 2.0. Start: `.venv/bin/uvicorn pipeline.api:app --port 8000`.
 
 ## Python interfaces
 

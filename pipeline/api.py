@@ -42,7 +42,7 @@ def default_runner(**kwargs):
 class RunRequest(BaseModel):
     project: str
     site: str | None = None
-    review_threshold: float = Field(0.5, ge=0, le=1)
+    review_threshold: float = Field(0.9, ge=0, le=1)
     merge_radius: float = Field(0.2, gt=0, allow_inf_nan=False)
     cabinet_radius: float = Field(2.0, gt=0, allow_inf_nan=False)
     min_confidence: float = Field(MIN_CONFIDENCE, ge=0, le=1)
