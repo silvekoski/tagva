@@ -1,0 +1,10 @@
+{
+  "name": "strong-dark",
+  "dark_prob": 0.55,
+  "brightness": [0.08, 0.4],
+  "brightness_dark": [0.003, 0.04],
+  "dark_noise_gain": 3.0,
+  "headlamp_prob": 0.5,
+  "point_light_prob": 0.3,
+  "kelvin": [2700, 6500]
+}

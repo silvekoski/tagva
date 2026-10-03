@@ -1,0 +1,13 @@
+{
+  "name": "heavy-occlusion",
+  "cable_prob": 0.8,
+  "cables_max": 8,
+  "glass_prob": 0.45,
+  "tray_prob": 0.8,
+  "devices": [2, 8],
+  "narrow_prob": 0.5,
+  "label_item_prob": 0.7,
+  "full_view_prob": 0.6,
+  "cable_radius": [0.004, 0.03],
+  "cable_spread": 0.1
+}
