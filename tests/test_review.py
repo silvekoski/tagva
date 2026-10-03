@@ -45,6 +45,11 @@ def test_clean_device_has_no_reasons():
     assert review.reasons(g, "Q01", 0.5, 0.2, False, False) == []
 
 
+def test_space_variants_are_no_ocr_conflict():
+    g = Group([obs("sweep-01", [0, 0, 0], text="Q01 FEED"), obs("sweep-02", [0, 0, 0], text="q01feed")], np.zeros(3))
+    assert review.reasons(g, "Q01 FEED", 0.5, 0.2, False, False) == []
+
+
 def test_no_anchor():
     g = Group([obs("sweep-01", None)], None)
     assert review.reasons(g, "Q01", 0.5, 0.2, False, False) == ["no_anchor"]

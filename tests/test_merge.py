@@ -1,6 +1,6 @@
 import numpy as np
 
-from pipeline.merge import Observation, merge, ray_distance, vote_text
+from pipeline.merge import Observation, merge, ray_distance, text_key, vote_text
 
 ORIGIN = np.zeros(3)
 
@@ -49,6 +49,13 @@ def test_vote_text_is_score_weighted_and_normalized():
          obs([0, 0, 0], text="H08 METERING", text_score=0.9), obs([0, 0, 0], text="", text_score=1.0)]
     assert vote_text(a) == "H03 metering"
     assert vote_text([obs([0, 0, 0])]) == ""
+
+
+def test_vote_text_counts_sweeps_and_keeps_the_spaced_variant():
+    a = [obs([0, 0, 0], text="H04 SOLAR1", text_score=0.9, sweep="sweep-12"), obs([0, 0, 0], text="H04 SOLAR 1", text_score=0.6, sweep="sweep-13"),
+         obs([0, 0, 0], text="KOKOOJA WISKO", text_score=0.99, sweep="sweep-12"), obs([0, 0, 0], text="KOKOOJA WISKO", text_score=0.99, sweep="sweep-12")]
+    assert vote_text(a) == "H04 SOLAR 1"
+    assert text_key(" H04 Solar 1 ") == "h04solar1"
 
 
 def test_empty_input():

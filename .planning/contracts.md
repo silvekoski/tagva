@@ -122,8 +122,14 @@ class Ocr:
         """-> list of (text, score)"""
     def read(self, image):  # one BGR view
         """-> list of (text, score), the text lines of the view in reading order"""
+    def reads(self, images):  # BGR views, read in parallel worker processes
+        """-> one list of (text, score) per view"""
     def labels(self, faces, boxes, pano_width, pano_height):  # pano text line boxes of one sweep
         """-> list of (block box, detection score, text, text score) for the cabinet labels"""
+    def read_labels(self, views):  # output of label_views; does not need the faces
+        """-> the same as labels"""
+def label_views(faces, boxes, pano_width, pano_height):
+    """-> list of (block box, detection score, line count, view)"""
 def box_view(faces, box, pano_width, pano_height, min_width=640):
     """Rectified, upscaled, full-resolution perspective crop centered on a pano box."""
 def device_name(text_lines):  # list of (text, score) from a device crop

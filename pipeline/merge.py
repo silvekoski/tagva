@@ -38,17 +38,25 @@ def normalize_text(text):
     return " ".join(text.split())
 
 
+def text_key(text):
+    return "".join(text.split()).casefold()
+
+
 def vote_text(observations):
-    weights, variants = defaultdict(float), defaultdict(lambda: defaultdict(float))
+    """The text that the most sweeps read, compared with spaces and case removed, then the largest text score sum.
+    Of its variants, the one with the most words wins, because the recognizer drops spaces more often than it adds them."""
+    sweeps, weights, variants = defaultdict(set), defaultdict(float), defaultdict(lambda: defaultdict(float))
     for o in observations:
         text = normalize_text(o.text)
-        if text:
-            weights[text.casefold()] += o.text_score
-            variants[text.casefold()][text] += o.text_score
+        key = text_key(text)
+        if key:
+            sweeps[key].add(o.sweep)
+            weights[key] += o.text_score
+            variants[key][text] += o.text_score
     if not weights:
         return ""
-    key = min(weights, key=lambda k: (-weights[k], k))
-    return min(variants[key], key=lambda t: (-variants[key][t], t))
+    key = min(weights, key=lambda k: (-len(sweeps[k]), -weights[k], k))
+    return min(variants[key], key=lambda t: (-len(t.split()), -variants[key][t], t))
 
 
 def _find(parent, i):

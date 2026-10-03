@@ -196,9 +196,11 @@ def test_group_lines_across_seam():
 def test_labels_pads_multi_line_views(monkeypatch):
     calls = []
     monkeypatch.setattr(ocr, "box_view", lambda faces, box, pw, ph, min_width: calls.append((box, min_width)) or box)
-    reader = SimpleNamespace(recognize=lambda views: [("OT1", 0.9)] * len(views), read=lambda view: [("H04", 0.99), ("SOLAR 1", 0.98)])
+    reader = ocr.Ocr.__new__(ocr.Ocr)
+    reader.pool = None
+    reader.models = SimpleNamespace(recognize=lambda crops: [("OT1", 0.9)] * len(crops), read=lambda view: [("H04", 0.99), ("SOLAR 1", 0.98)])
     lines = [((1000.0, 2080.0, 20.0, 12.0), 0.9), ((1000.0, 2093.0, 20.0, 12.0), 0.8), ((3000.0, 2000.0, 30.0, 10.0), 0.7)]
-    out = ocr.Ocr.labels(reader, None, lines, W, H)
+    out = reader.labels(None, lines, W, H)
     assert [(text, box) for box, _, text, _ in out] == [("H04 SOLAR 1", (1000.0, 2080.0, 20.0, 25.0)), ("OT1", (3000.0, 2000.0, 30.0, 10.0))]
     (block, block_width), (single, single_width) = calls
     pad = ocr.LABEL_PAD * 25.0 / 2

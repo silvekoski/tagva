@@ -71,7 +71,37 @@ def sample_cube(faces, dirs):
 
 
 def render_tile(faces, yaw, pitch, fov, size):
-    return sample_cube(faces, tile_dirs(yaw, pitch, fov, size))
+    """Same pixels as sample_cube(faces, tile_dirs(...)): the tile maps to each face by a homography, and each
+    pixel comes from the face with the largest forward component."""
+    f, r, up = tile_basis(yaw, pitch)
+    t, k = np.tan(fov / 2), 2 * np.tan(fov / 2) / size
+    a = np.stack([k * r, -k * up, f + (k / 2 - t) * (r - up)], 1)
+    c = FACE_SIZE / 2 - 0.5
+    cam = np.array([[FACE_FOCAL, 0.0, -c], [0.0, -FACE_FOCAL, -c], [0.0, 0.0, -1.0]])
+    xs, ys = np.arange(size, dtype=np.float32), np.arange(size, dtype=np.float32)[:, None]
+    corners = np.array([[0, 0, 1], [size, 0, 1], [0, size, 1], [size, size, 1]], float)
+    homographies, best, top = {}, np.zeros((size, size), np.int8), None
+    for i, (_, R) in enumerate(faces):
+        m = cam @ R.T @ a
+        if (corners @ m[2]).max() <= 0:
+            continue
+        homographies[i] = m
+        score = np.float32(m[2, 0]) * xs + (np.float32(m[2, 1]) * ys + np.float32(m[2, 2]))
+        if top is None:
+            top = score
+            best[:] = i
+        else:
+            better = score > top
+            best[better] = i
+            np.maximum(top, score, out=top)
+    out = np.empty((size, size, 3), np.uint8)
+    for i, m in homographies.items():
+        mask = best == i
+        if mask.any():
+            warped = cv2.warpPerspective(faces[i][0], m, (size, size), flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
+                                         borderMode=cv2.BORDER_REPLICATE)
+            np.copyto(out, warped, where=mask[..., None])
+    return out
 
 
 def render_equirect(faces, w, h, strip=256):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from pipeline.merge import normalize_text
+from pipeline.merge import text_key
 from pipeline.scan import local_dirs_to_grid
 
 REASONS = (
@@ -37,7 +37,7 @@ def few_observations(group, sweeps, load_grid):
 
 
 def reasons(group, name, threshold, merge_radius, ambiguous, few):
-    names = {normalize_text(o.text).casefold() for o in group.observations} - {""}
+    names = {text_key(o.text) for o in group.observations} - {""}
     flags = {
         "low_confidence": round(group.score, 3) < threshold,
         "empty_ocr": not name,

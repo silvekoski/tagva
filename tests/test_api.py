@@ -119,6 +119,18 @@ def test_tags_get_put(env):
     assert client.put("/api/tags/VEO DEMO", json=data).status_code == 422
 
 
+def test_tags_project_with_slash(env):
+    client, *_ = env
+    data = sample_tags("VEO/2026 A")
+    for path in ("/api/tags/VEO/2026 A", "/api/tags/VEO%2F2026%20A"):
+        r = client.put(path, json=data)
+        assert r.status_code == 200 and r.json()["project"] == "VEO/2026 A"
+        assert client.get(path).json() == r.json()
+    assert client.get("/api/tags/VEO/2026 B").status_code == 404
+    assert client.put("/api/tags/VEO/2026 B", json=data).status_code == 422
+    assert client.get("/api/projects").json() == {"projects": ["VEO/2026 A"]}
+
+
 def test_raycast(env):
     client, *_ = env
     u, v = 3000.0, 1800.0

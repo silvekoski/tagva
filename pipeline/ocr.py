@@ -1,8 +1,11 @@
 import json
+import multiprocessing
 import os
 import re
 import unicodedata
+from concurrent.futures import ProcessPoolExecutor
 from functools import cache
+from itertools import repeat
 from pathlib import Path
 
 import cv2
@@ -11,10 +14,13 @@ import numpy as np
 from pipeline import sphere
 
 os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+os.environ.setdefault("FLAGS_use_system_allocator", "1")
 
 DET_MODEL = "PP-OCRv5_mobile_det"
 REC_MODEL = "PP-OCRv5_server_rec"
 DET_SIDE = 1280
+REC_BATCH = 8
+WORKERS = int(os.environ.get("REX_OCR_WORKERS", (os.cpu_count() or 2) // 2 + 1))
 VIEW_MARGIN = 0.25
 LABEL_VIEW_WIDTH = 320
 LABEL_PAD = 1.0
@@ -23,47 +29,103 @@ STOPLIST = Path(__file__).with_name("ocr-stoplist.json")
 CONFUSABLE = str.maketrans("OILSZB", "011528")
 
 
-class Ocr:
-    def __init__(self, det_model=DET_MODEL, rec_model=REC_MODEL, device="cpu", det_side=DET_SIDE):
+class Models:
+    """The PP-OCRv5 predictors of one process. A Paddle CPU predictor uses one core here, so Ocr runs several."""
+
+    def __init__(self, det_model, rec_model, device, det_side):
         from paddleocr import TextDetection, TextRecognition
 
         self.det = TextDetection(model_name=det_model, device=device, limit_side_len=det_side, limit_type="max")
         self.rec = TextRecognition(model_name=rec_model, device=device)
 
-    def detect(self, images):
-        out = []
-        for r in self.det.predict(list(images), batch_size=1):
-            out.append([(np.asarray(p, np.float64).reshape(4, 2), float(s)) for p, s in zip(r["dt_polys"], r["dt_scores"])])
-        return out
+    def detect(self, image):
+        (r,) = self.det.predict([image], batch_size=1)
+        return [(np.asarray(p, np.float64).reshape(4, 2), float(s)) for p, s in zip(r["dt_polys"], r["dt_scores"])]
 
     def recognize(self, crops):
+        return [(str(r["rec_text"]), float(r["rec_score"])) for r in self.rec.predict(list(crops), batch_size=REC_BATCH)]
+
+    def read(self, image):
+        polys = reading_order(p for p, _ in self.detect(image))
+        return self.recognize([line_crop(image, p) for p in polys] or [image])
+
+
+_models = None
+
+
+def _start(*args):
+    global _models
+    _models = Models(*args)
+
+
+def _work(method, item):
+    return getattr(_models, method)(item)
+
+
+class Ocr:
+    def __init__(self, det_model=DET_MODEL, rec_model=REC_MODEL, device="cpu", det_side=DET_SIDE, workers=WORKERS):
+        """workers: number of worker processes, each with its own predictors. 0 runs the predictors in this process."""
+        args = (det_model, rec_model, device, det_side)
+        self.models = None if workers else Models(*args)
+        self.pool = ProcessPoolExecutor(workers, multiprocessing.get_context("spawn"), initializer=_start, initargs=args) if workers else None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        if self.pool is not None:
+            self.pool.shutdown(cancel_futures=True)
+
+    def _map(self, method, items):
+        """Iterator over the results of the items. The worker processes get all items at once."""
+        if self.pool is None:
+            return (getattr(self.models, method)(item) for item in items)
+        return self.pool.map(_work, repeat(method), items)
+
+    def _recognize(self, crops):
         crops = list(crops)
-        if not crops:
-            return []
-        return [(str(r["rec_text"]), float(r["rec_score"])) for r in self.rec.predict(crops, batch_size=8)]
+        batches = self._map("recognize", [crops[i:i + REC_BATCH] for i in range(0, len(crops), REC_BATCH)])
+        return (r for batch in batches for r in batch)
+
+    def detect(self, images):
+        return list(self._map("detect", images))
+
+    def recognize(self, crops):
+        return list(self._recognize(crops))
 
     def read(self, image):
         """Text lines of one view in reading order: list of (text, score). One line of the full view when no text is detected."""
-        polys = reading_order(p for p, _ in self.detect([image])[0])
-        return self.recognize([line_crop(image, p) for p in polys] or [image])
+        return self.reads([image])[0]
+
+    def reads(self, images):
+        return list(self._map("read", images))
 
     def labels(self, faces, boxes, pano_width, pano_height):
-        """Cabinet labels among the pano text line boxes of one sweep: list of (block box, detection score, text, text score).
-        The view of a block with two or more lines has LABEL_PAD line heights of extra space on the left and the right,
-        for a text box that is too narrow."""
-        blocks = group_lines(boxes, pano_width)
-        views = []
-        for (x, y, w, h), _, n in blocks:
-            pad = LABEL_PAD * h / n if n > 1 else 0.0
-            width = LABEL_VIEW_WIDTH * (1 + 2 * pad / max(w, 1.0))
-            views.append(box_view(faces, (x - pad, y, w + 2 * pad, h), pano_width, pano_height, width))
-        single = iter(self.recognize([v for v, (_, _, n) in zip(views, blocks) if n == 1]))
+        """Cabinet labels among the pano text line boxes of one sweep: list of (block box, detection score, text, text score)."""
+        return self.read_labels(label_views(faces, boxes, pano_width, pano_height))
+
+    def read_labels(self, views):
+        """Cabinet labels of the label_views output. It does not need the faces."""
+        single = self._recognize(v for _, _, n, v in views if n == 1)
+        multi = self._map("read", [v for _, _, n, v in views if n > 1])
         out = []
-        for view, (box, score, n) in zip(views, blocks):
-            text, text_score = label_text([next(single)] if n == 1 else self.read(view))
+        for box, score, n, _ in views:
+            text, text_score = label_text([next(single)] if n == 1 else next(multi))
             if is_cabinet_label(text, text_score):
                 out.append((box, score, text, text_score))
         return out
+
+
+def label_views(faces, boxes, pano_width, pano_height):
+    """Line blocks of the pano text line boxes of one sweep, with their views: list of (block box, detection score,
+    line count, view). The view of a block with two or more lines has LABEL_PAD line heights of extra space on the
+    left and the right, for a text box that is too narrow."""
+    out = []
+    for (x, y, w, h), score, n in group_lines(boxes, pano_width):
+        pad = LABEL_PAD * h / n if n > 1 else 0.0
+        width = LABEL_VIEW_WIDTH * (1 + 2 * pad / max(w, 1.0))
+        out.append(((x, y, w, h), score, n, box_view(faces, (x - pad, y, w + 2 * pad, h), pano_width, pano_height, width)))
+    return out
 
 
 def reading_order(polys, gap=1.0):

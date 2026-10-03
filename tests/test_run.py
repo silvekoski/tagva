@@ -1,5 +1,6 @@
 import json
 import sys
+from contextlib import nullcontext
 import time
 import types
 from pathlib import Path
@@ -8,6 +9,7 @@ import numpy as np
 import pytest
 
 from pipeline import review, run, tiles
+from pipeline.merge import text_key
 from pipeline.scan import GRID_COLS, GRID_ROW_HORIZON, GRID_ROWS, GRID_STEP
 from pipeline.sphere import equirect_to_dirs
 
@@ -28,12 +30,12 @@ def plate_box(spec, position, center, normal, width, height):
     return (float(x.min()), float(y.min()), float(x.max()), float(y.max()))
 
 
-def fake_ocr_module(ocr, box_view=lambda faces, box, w, h: (faces, box), device_name=None, is_cabinet_label=None):
+def fake_ocr_module(ocr, box_view=lambda faces, box, w, h: (faces, box), device_name=None):
     m = types.ModuleType("pipeline.ocr")
-    m.Ocr = lambda: ocr
+    m.Ocr = lambda: nullcontext(ocr)
     m.box_view = box_view
+    m.label_views = lambda faces, boxes, w, h: [(box, score, 1, box_view(faces, box, w, h)) for box, score in boxes]
     m.device_name = device_name or (lambda lines: " ".join(t for t, _ in lines if t != "REX615"))
-    m.is_cabinet_label = is_cabinet_label or (lambda text, score: text.startswith("H") and score > 0.5)
     return m
 
 
@@ -75,12 +77,11 @@ class SyntheticOcr:
             out.append([(np.array([[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]]), 0.9) for b in boxes if b is not None])
         return out
 
-    def recognize(self, crops):
-        return [(nearest(sweep, box, LABELS)[1], 0.9) for sweep, box in crops]
+    def reads(self, crops):
+        return [[("REX615", 0.95), (nearest(sweep, box, DEVICES)[2], 0.8)] for sweep, box in crops]
 
-    def read(self, crop):
-        sweep, box = crop
-        return [("REX615", 0.95), (nearest(sweep, box, DEVICES)[2], 0.8)]
+    def read_labels(self, views):
+        return [(box, score, nearest(sweep, box, LABELS)[1], 0.9) for box, score, _, (sweep, _) in views]
 
 
 @pytest.fixture
@@ -147,28 +148,17 @@ def test_run_pipeline_flags_missing_anchor_and_empty_ocr(synthetic, monkeypatch)
     assert all(d["anchor"] is None and "no_anchor" in d["review_reasons"] and "empty_ocr" in d["review_reasons"] for d in devices)
 
 
-def test_run_pipeline_without_read_uses_recognize(synthetic, monkeypatch):
+def test_run_pipeline_drops_label_read_by_one_sweep_of_two_that_see_it(synthetic, monkeypatch):
     tmp_path, scan_dir = synthetic
 
-    class RecognizeOnly:
-        detect, recognize = SyntheticOcr.detect, SyntheticOcr.recognize
+    class OneSweepOcr(SyntheticOcr):
+        def read_labels(self, views):
+            labels = super().read_labels(views)
+            return [label for label, (_, _, _, (sweep, _)) in zip(labels, views) if sweep == 0 or label[2] != "H02 FEED"]
 
-    monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(RecognizeOnly()))
+    monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(OneSweepOcr()))
     data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector())
-    names = [d["name"] for t in data["tags"] for d in t["devices"]]
-    assert len(names) == 3 and set(names) <= {text for _, text in LABELS}
-
-
-def test_run_pipeline_uses_ocr_labels(synthetic, monkeypatch):
-    tmp_path, scan_dir = synthetic
-
-    class BlockOcr(SyntheticOcr):
-        def labels(self, sweep, boxes, w, h):
-            return [(box, score, nearest(sweep, box, LABELS)[1].lower(), 0.9) for box, score in boxes]
-
-    monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(BlockOcr()))
-    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector())
-    assert [t["cabinet"] for t in data["tags"]] == ["h01 feed", "h02 feed", "unassigned"]
+    assert [(t["cabinet"], [d["name"] for d in t["devices"]]) for t in data["tags"]] == [("H01 FEED", ["Q02", "Q01"]), ("unassigned", ["Q03"])]
 
 
 def test_contains_uses_box_center_across_seam():
@@ -239,10 +229,10 @@ def test_run_pipeline_real_scan_ground_truth(tmp_path, monkeypatch):
         def detect(self, images):
             return [[] for _ in images]
 
-        def recognize(self, crops):
-            return [("", 0.0) for _ in crops]
+        def reads(self, crops):
+            return [[] for _ in crops]
 
-        def read(self, crop):
+        def read_labels(self, views):
             return []
 
     render, render_times = tiles.render_tiles, []
@@ -255,7 +245,7 @@ def test_run_pipeline_real_scan_ground_truth(tmp_path, monkeypatch):
 
     monkeypatch.setattr(tiles, "render_tiles", timed_render)
     monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(
-        EmptyOcr(), box_view=lambda *a, **k: None, device_name=lambda lines: "", is_cabinet_label=lambda t, s: False))
+        EmptyOcr(), box_view=lambda *a, **k: None, device_name=lambda lines: ""))
     start = time.perf_counter()
     data = run.run_pipeline("REAL", "", SCAN_DIR, E57, "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=TruthDetector(manifest["sweeps"], truth))
     print(f"run {time.perf_counter() - start:.1f} s, tile rendering per sweep: mean {np.mean(render_times):.2f} s, "
@@ -269,24 +259,24 @@ def test_run_pipeline_real_scan_ground_truth(tmp_path, monkeypatch):
     assert dist.min(1).max() < 0.3
 
 
+REAL_CABINETS = {"w1": "H01 PT1", "w2": "H02 STATION TRANSFORMER", "w3": "H03 METERING", "w4": "H04 SOLAR 1", "w5": "H05 SOLAR 2", "e1": "OT1"}
+
+
 @pytest.mark.slow
 @REAL_SCAN
-def test_run_pipeline_real_ocr_sweep_12(tmp_path):
+def test_run_pipeline_real_ocr(tmp_path):
+    """Full run with the real OCR and the ground truth detector: each relay goes to the nameplate of its own panel."""
     truth = json.loads(REAL_DEVICES.read_text())["devices"]
     manifest = json.loads((SCAN_DIR / "manifest.json").read_text())
-    manifest["sweeps"] = [s for s in manifest["sweeps"] if s["id"] == "sweep-12"]
-    scan_dir = tmp_path / "scan"
-    scan_dir.mkdir()
-    (scan_dir / "depth").symlink_to(SCAN_DIR / "depth")
-    (scan_dir / "manifest.json").write_text(json.dumps(manifest))
-    data = run.run_pipeline("REAL", "", scan_dir, E57, "missing.pt", tmp_path / "tags", tmp_path / "docs",
+    start = time.perf_counter()
+    data = run.run_pipeline("REAL", "", SCAN_DIR, E57, "missing.pt", tmp_path / "tags", tmp_path / "docs",
                             detector=TruthDetector(manifest["sweeps"], truth))
-    cabinets = {t["cabinet"] for t in data["tags"]}
-    assert {"H02 STATION TRANSFORMER", "H03 METERING"} <= cabinets
-    assert any(c.startswith("H04 SOLAR") for c in cabinets)
-    assert not any(c.startswith("F") and c[1:].isdigit() for c in cabinets)
-    w3 = next(d for d in truth if d["id"] == "w3")
-    tag = next(t for t in data["tags"] for d in t["devices"]
-               if np.linalg.norm([d["anchor"][k] - w3["center"][i] for i, k in enumerate("xyz")]) < 0.1)
-    if tag["cabinet"] != "H03 METERING":
-        pytest.xfail(f"w3 goes to the note tape or print {tag['cabinet']!r}: the ocr label filter must reject it")
+    print(f"run {time.perf_counter() - start:.1f} s, cabinets {[t['cabinet'] for t in data['tags']]}")
+    cabinet = {}
+    for t in data["tags"]:
+        for d in t["devices"]:
+            near = [g["id"] for g in truth if np.linalg.norm([d["anchor"][k] - g["center"][i] for i, k in enumerate("xyz")]) < 0.1]
+            cabinet.update({i: t["cabinet"] for i in near})
+    print(cabinet)
+    assert sorted(cabinet) == sorted(g["id"] for g in truth)
+    assert {i: text_key(cabinet[i]) for i in REAL_CABINETS} == {i: text_key(c) for i, c in REAL_CABINETS.items()}

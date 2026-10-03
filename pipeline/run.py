@@ -1,5 +1,7 @@
 import importlib
 import json
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from functools import cache
 from pathlib import Path
 
@@ -78,14 +80,6 @@ def run_pipeline(
         from pipeline.detect import Detector
 
         detector = Detector(weights)
-    ocr = ocr or ocr_lib.Ocr()
-    read = getattr(ocr, "read", None) or (lambda crop: ocr.recognize([crop]))
-
-    def recognize_labels(faces, boxes, pano_width, pano_height):
-        texts = ocr.recognize([ocr_lib.box_view(faces, box, pano_width, pano_height) for box, _ in boxes])
-        return [(box, score, *t) for (box, score), t in zip(boxes, texts) if ocr_lib.is_cabinet_label(*t)]
-
-    read_labels = getattr(ocr, "labels", None) or recognize_labels
 
     @cache
     def load_grid(sid):
@@ -98,35 +92,45 @@ def run_pipeline(
         ray = equirect_to_dirs(x + w / 2, y + h / 2, W, H)
         return Observation(sid, position, ray, box, score, text, text_score, anchor)
 
-    scan = Scan(e57_path)
-    device_obs, label_obs = [], []
-    for k, (sid, index, position, rotation) in enumerate(sweeps):
-        progress("detect", SWEEPS_SHARE * k / len(sweeps), f"{sid}: tiles")
-        faces = scan.faces(index)
-        specs, images = zip(*tiles.render_tiles(faces))
-        progress("detect", SWEEPS_SHARE * (k + 0.3) / len(sweeps), f"{sid}: detector")
-        devices = pano_boxes(specs, detector(list(images)), W, H)
-        progress("detect", SWEEPS_SHARE * (k + 0.5) / len(sweeps), f"{sid}: text detection")
-        texts = [[(polygon_xyxy(p), s) for p, s in polys] for polys in ocr.detect(list(images))]
-        plates = [box for box, score in devices if score >= review_threshold]
-        text_boxes = [(b, s) for b, s in pano_boxes(specs, texts, W, H) if not any(contains(p, b, W) for p in plates)]
-        del images
-        progress("detect", SWEEPS_SHARE * (k + 0.7) / len(sweeps), f"{sid}: recognition")
-        for box, score in devices:
-            lines = read(ocr_lib.box_view(faces, box, W, H))
+    def read_sweep(sid, position, rotation, devices, device_views, label_views):
+        found = []
+        for (box, score), lines in zip(devices, ocr.reads(device_views)):
             text_score = float(np.mean([s for _, s in lines])) if lines else 0.0
-            device_obs.append(observe(sid, position, rotation, box, score, ocr_lib.device_name(lines), text_score))
-        for box, score, text, text_score in read_labels(faces, text_boxes, W, H):
-            label_obs.append(observe(sid, position, rotation, box, score, text, text_score))
-        del faces
-        progress("detect", SWEEPS_SHARE * (k + 1) / len(sweeps), f"{sid}: {len(devices)} device boxes, {len(text_boxes)} text boxes")
+            found.append(observe(sid, position, rotation, box, score, ocr_lib.device_name(lines), text_score))
+        labels = [observe(sid, position, rotation, *label) for label in ocr.read_labels(label_views)]
+        return found, labels
+
+    scan = Scan(e57_path)
+    readings = []
+    with ThreadPoolExecutor(1) as background, (nullcontext(ocr) if ocr else ocr_lib.Ocr()) as ocr:
+        for k, (sid, index, position, rotation) in enumerate(sweeps):
+            progress("detect", SWEEPS_SHARE * k / len(sweeps), f"{sid}: tiles")
+            faces = scan.faces(index)
+            specs, images = zip(*tiles.render_tiles(faces))
+            progress("detect", SWEEPS_SHARE * (k + 0.3) / len(sweeps), f"{sid}: detector and text detection")
+            polys = background.submit(ocr.detect, list(images))
+            devices = pano_boxes(specs, detector(list(images)), W, H)
+            texts = [[(polygon_xyxy(p), s) for p, s in found] for found in polys.result()]
+            del images
+            plates = [box for box, score in devices if score >= review_threshold]
+            text_boxes = [(b, s) for b, s in pano_boxes(specs, texts, W, H) if not any(contains(p, b, W) for p in plates)]
+            device_views = [ocr_lib.box_view(faces, box, W, H) for box, _ in devices]
+            label_views = ocr_lib.label_views(faces, text_boxes, W, H)
+            del faces
+            readings.append(background.submit(read_sweep, sid, position, rotation, devices, device_views, label_views))
+            progress("detect", SWEEPS_SHARE * (k + 1) / len(sweeps), f"{sid}: {len(devices)} device boxes, {len(text_boxes)} text boxes")
+        device_obs, label_obs = [], []
+        for reading in readings:
+            found, labels = reading.result()
+            device_obs += found
+            label_obs += labels
 
     progress("merge", SWEEPS_SHARE, f"merging {len(device_obs)} device and {len(label_obs)} label observations")
+    geometry = [(sid, position, rotation) for sid, _, position, rotation in sweeps]
     groups = merge(device_obs, merge_radius)
-    labels = [g for g in merge(label_obs, merge_radius) if g.anchor is not None and g.text]
+    labels = [g for g in merge(label_obs, merge_radius) if cabinets.confirmed(g, geometry, load_grid)]
     assignment = cabinets.assign([g.anchor for g in groups], [g.anchor for g in labels], cabinet_radius)
     docs = documents.lookup(docs_dir, DEVICE_TYPE, project)
-    geometry = [(sid, position, rotation) for sid, _, position, rotation in sweeps]
 
     progress("review", 0.95, "review flags")
     entries = []

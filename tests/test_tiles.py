@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 from pipeline import sphere, tiles
@@ -70,3 +71,23 @@ def test_nms_across_seam():
     boxes = [(W - 20, 100, 50, 40), (10, 100, 20, 40)]
     kept, _ = tiles.nms_pano(boxes, [0.9, 0.8], [False, False], W)
     assert kept == [0]
+
+
+def test_render_tile_matches_sample_cube(monkeypatch):
+    size = 256
+    monkeypatch.setattr(sphere, "FACE_SIZE", size)
+    monkeypatch.setattr(sphere, "FACE_FOCAL", size / 2)
+    monkeypatch.setattr(sphere, "REMAP_COLS", size)
+    rng = np.random.default_rng(0)
+    q, _ = np.linalg.qr(rng.normal(size=(3, 3)))
+    axes = [np.array(a, float) for a in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1))]
+    faces = []
+    for f in axes:
+        up = np.array([0.0, 0.0, 1.0]) if abs(f[2]) < 0.5 else np.array([1.0, 0.0, 0.0])
+        R = q @ np.stack([np.cross(f, up), up, -f], 1)
+        img = cv2.GaussianBlur(rng.integers(0, 256, (size, size, 3), dtype=np.uint8), (0, 0), 2)
+        faces.append((img, R))
+    for yaw, pitch, fov, n in [(0.3, -0.2, 1.0, 97), (2.9, 1.3, 1.9, 120), (-1.7, 0.0, 0.2, 64)]:
+        new = sphere.render_tile(faces, yaw, pitch, fov, n).astype(int)
+        old = sphere.sample_cube(faces, sphere.tile_dirs(yaw, pitch, fov, n)).astype(int)
+        assert np.abs(new - old).max() <= 3 and np.mean(np.abs(new - old) > 1) < 0.002

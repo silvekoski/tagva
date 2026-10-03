@@ -34,16 +34,9 @@ def _detector(weights, mtime):
     return Detector(weights)
 
 
-@cache
-def _ocr():
-    from pipeline.ocr import Ocr
-
-    return Ocr()
-
-
 def default_runner(**kwargs):
     weights = Path(kwargs["weights"])
-    return run_pipeline(**kwargs, detector=_detector(str(weights), weights.stat().st_mtime), ocr=_ocr())
+    return run_pipeline(**kwargs, detector=_detector(str(weights), weights.stat().st_mtime))
 
 
 class RunRequest(BaseModel):
@@ -120,14 +113,14 @@ def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_d
             raise HTTPException(404, "unknown run")
         return dict(runs[run_id])
 
-    @app.get("/api/tags/{project}")
+    @app.get("/api/tags/{project:path}")
     def get_tags(project: str):
         data = tagfile.load(tags_dir, project)
         if data is None:
             raise HTTPException(404, "no tag file for this project")
         return data
 
-    @app.put("/api/tags/{project}")
+    @app.put("/api/tags/{project:path}")
     def put_tags(project: str, body: tagfile.TagFile):
         if slug(body.project) != slug(project):
             raise HTTPException(422, "project in the body does not match the path")
