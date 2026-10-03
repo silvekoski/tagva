@@ -1,12 +1,11 @@
 {
-  "note": "Approximate values from the orthophoto. The real-test owner refines center and size.",
   "devices": [
-    {"id": "w1", "target": true, "center": [-5.701, -5.87, 1.87], "normal": [1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "w2", "target": true, "center": [-5.704, -4.78, 1.87], "normal": [1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "w3", "target": true, "center": [-5.707, -3.78, 1.87], "normal": [1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "w4", "target": true, "center": [-5.708, -2.78, 1.87], "normal": [1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "w5", "target": true, "center": [-5.712, -1.78, 1.87], "normal": [1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "e1", "target": true, "center": [-2.766, -5.92, 1.75], "normal": [-1, 0, 0], "width": 0.262, "height": 0.177},
-    {"id": "e2", "target": false, "center": [-2.763, -5.92, 1.43], "normal": [-1, 0, 0], "width": 0.177, "height": 0.177}
+    {"id": "w1", "target": true, "center": [-5.7011, -5.8566, 1.8454], "normal": [1.0, 0.0036, -0.0046], "width": 0.258, "height": 0.168},
+    {"id": "w2", "target": true, "center": [-5.7087, -4.7874, 1.8421], "normal": [1.0, -0.0028, 0.0028], "width": 0.258, "height": 0.168},
+    {"id": "w3", "target": true, "center": [-5.7114, -3.7801, 1.8414], "normal": [1.0, -0.0008, 0.0045], "width": 0.258, "height": 0.168},
+    {"id": "w4", "target": true, "center": [-5.714, -2.7867, 1.8361], "normal": [1.0, 0.0024, 0.0021], "width": 0.258, "height": 0.168},
+    {"id": "w5", "target": true, "center": [-5.7142, -1.7924, 1.835], "normal": [1.0, -0.0063, 0.0037], "width": 0.258, "height": 0.168},
+    {"id": "e1", "target": true, "center": [-2.7646, -5.9245, 1.7186], "normal": [-0.9998, -0.0177, 0.0113], "width": 0.258, "height": 0.168},
+    {"id": "e2", "target": false, "center": [-2.7637, -5.9232, 1.4222], "normal": [-0.9998, -0.0197, -0.0048], "width": 0.173, "height": 0.169}
   ]
 }
