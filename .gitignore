@@ -1,0 +1,13 @@
+.env
+*.e57
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+data/
+runs/
+*.pt
+*.mlpackage
+.DS_Store
+.venv-bpy/
