@@ -101,6 +101,7 @@ FastAPI's own `/docs` page must be off (`docs_url=None`, `redoc_url=None`), beca
 | GET | `/api/tags/{project}` | The tag file, or 404. |
 | PUT | `/api/tags/{project}` | Validate and save an edited tag file. Returns the saved file. 422 when invalid. |
 | GET | `/api/projects` | `{projects: [project labels with a tag file]}`. |
+| GET | `/api/raycast?sweep=sweep-NN&u=..&v=..` | `{anchor: {x, y, z} or null}`. The 3D point under pano pixel (u, v), from the depth grid (`box_anchor` with a small box). The tag editor uses it to place an anchor. |
 
 Defaults: `review_threshold` 0.5, `merge_radius` 0.2, `cabinet_radius` 2.0. Start: `.venv/bin/uvicorn pipeline.api:app --port 8000`.
 
@@ -119,6 +120,10 @@ class Ocr:
         """-> list (one per image) of list of (polygon float array (4, 2) in tile px, score)"""
     def recognize(self, crops):  # BGR crops
         """-> list of (text, score)"""
+    def read(self, image):  # one BGR view
+        """-> list of (text, score), the text lines of the view in reading order"""
+    def labels(self, faces, boxes, pano_width, pano_height):  # pano text line boxes of one sweep
+        """-> list of (block box, detection score, text, text score) for the cabinet labels"""
 def box_view(faces, box, pano_width, pano_height, min_width=640):
     """Rectified, upscaled, full-resolution perspective crop centered on a pano box."""
 def device_name(text_lines):  # list of (text, score) from a device crop

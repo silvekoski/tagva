@@ -11,3 +11,5 @@ runs/
 *.mlpackage
 .DS_Store
 .venv-bpy/
+.ruff_cache/
+.pytest_cache/

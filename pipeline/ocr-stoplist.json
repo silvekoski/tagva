@@ -1,0 +1,23 @@
+{
+  "min_score": 0.6,
+  "name_min_score": 0.85,
+  "min_chars": 2,
+  "max_words": 3,
+  "fuzzy_min_length": 4,
+  "fuzzy_long_length": 5,
+  "plate_print": [
+    "ABB", "RELION", "615", "REX615", "READY", "START", "PICKUP", "TRIP", "ESC", "CLEAR", "MENU", "HELP",
+    "CLOSE", "OPEN", "R", "L", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8",
+    "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "MEASUREMENTS", "EVENTS", "DISTURBANCE",
+    "RECORDS", "MONITORING", "CONFIGURATION", "SETTINGS", "SETTING", "GROUP", "TESTS", "TESTING", "INFORMATION", "LANGUAGE", "ALARM", "ALARMS",
+    "CONTROL", "LOCAL", "REMOTE", "SINGLE", "LINE", "DIAGRAM", "PARAMETERS", "ENTER", "OK", "CANCEL"
+  ],
+  "not_label": [
+    "ABB", "RELION", "615", "REX615", "READY", "START", "PICKUP", "TRIP", "ESC", "CLEAR", "MENU", "HELP",
+    "CLOSE", "OPEN", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10",
+    "F11", "F12", "F13", "F14", "F15", "F16", "UNIGEAR", "VD4", "ELCON", "RITTAL", "CERDEX", "VEO",
+    "SIEMENS", "SCHNEIDER", "ELECTRIC", "EATON", "LEGRAND", "HAGER", "PHOENIX", "WEIDMULLER", "SONEPAR", "LOCAL", "REMOTE", "CONTROL",
+    "MECH", "MECHANICAL", "OPERATION", "AUTO", "MANUAL", "OFF", "CAUTION", "DANGER", "WARNING", "HIGH", "VOLTAGE", "VAARA",
+    "SUURJÄNNITE", "TESTED", "TESTATTU", "PASSED", "FINAL"
+  ]
+}
