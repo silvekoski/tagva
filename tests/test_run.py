@@ -116,7 +116,7 @@ def test_run_pipeline_synthetic(synthetic):
     steps = []
     data = run.run_pipeline(
         "VEO DEMO", "", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs",
-        progress=lambda step, fraction, message: steps.append((step, fraction)), detector=SyntheticDetector(),
+        progress=lambda step, fraction, message: steps.append((step, fraction)), detector=SyntheticDetector(), min_confidence=0.0,
     )
     assert json.loads((tmp_path / "tags" / "VEO-DEMO.json").read_text()) == data
     assert data["site"] == "VEO DEMO" and data["scan"] == "x.e57"
@@ -141,7 +141,7 @@ def test_run_pipeline_flags_missing_anchor_and_empty_ocr(synthetic, monkeypatch)
     monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(SyntheticOcr(), device_name=lambda lines: ""))
     for i in range(len(SWEEPS)):
         np.savez_compressed(scan_dir / "depth" / f"sweep-{i:02d}.npz", range=np.zeros((GRID_ROWS, GRID_COLS), np.float16))
-    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector())
+    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector(), min_confidence=0.0)
     assert [t["id"] for t in data["tags"]] == ["tag-unassigned"]
     devices = data["tags"][0]["devices"]
     assert len(devices) == 6
@@ -157,7 +157,7 @@ def test_run_pipeline_drops_label_read_by_one_sweep_of_two_that_see_it(synthetic
             return [label for label, (_, _, _, (sweep, _)) in zip(labels, views) if sweep == 0 or label[2] != "H02 FEED"]
 
     monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(OneSweepOcr()))
-    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector())
+    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector(), min_confidence=0.0)
     assert [(t["cabinet"], [d["name"] for d in t["devices"]]) for t in data["tags"]] == [("H01 FEED", ["Q02", "Q01"]), ("unassigned", ["Q03"])]
 
 
@@ -181,10 +181,10 @@ def test_run_pipeline_skips_text_on_device_plates(synthetic, monkeypatch):
             return out
 
     monkeypatch.setitem(sys.modules, "pipeline.ocr", fake_ocr_module(PlateTextOcr()))
-    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector())
+    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs", detector=SyntheticDetector(), min_confidence=0.0)
     assert [t["cabinet"] for t in data["tags"]] == ["H01 FEED", "H02 FEED", "unassigned"]
     data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs",
-                            review_threshold=0.95, detector=SyntheticDetector())
+                            review_threshold=0.95, detector=SyntheticDetector(), min_confidence=0.0)
     assert [t["cabinet"] for t in data["tags"]] == ["H01 FEED", "H01 FEED", "H02 FEED", "unassigned"]
 
 
@@ -280,3 +280,11 @@ def test_run_pipeline_real_ocr(tmp_path):
     print(cabinet)
     assert sorted(cabinet) == sorted(g["id"] for g in truth)
     assert {i: text_key(cabinet[i]) for i in REAL_CABINETS} == {i: text_key(c) for i, c in REAL_CABINETS.items()}
+
+
+def test_run_pipeline_drops_devices_below_min_confidence(synthetic):
+    tmp_path, scan_dir = synthetic
+    data = run.run_pipeline("P", "S", scan_dir, "x.e57", "missing.pt", tmp_path / "tags", tmp_path / "docs",
+                            detector=SyntheticDetector(), min_confidence=0.5)
+    assert sorted(d["name"] for t in data["tags"] for d in t["devices"]) == ["Q01", "Q02"]
+    assert data["min_confidence"] == 0.5

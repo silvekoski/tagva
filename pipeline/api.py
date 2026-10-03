@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from pipeline import tagfile
 from pipeline.anchor import box_anchor
 from pipeline.documents import slug
-from pipeline.run import run_pipeline
+from pipeline.run import MIN_CONFIDENCE, run_pipeline
 
 ROOT = Path(__file__).resolve().parent.parent
 CORS_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -45,6 +45,7 @@ class RunRequest(BaseModel):
     review_threshold: float = Field(0.5, ge=0, le=1)
     merge_radius: float = Field(0.2, gt=0, allow_inf_nan=False)
     cabinet_radius: float = Field(2.0, gt=0, allow_inf_nan=False)
+    min_confidence: float = Field(MIN_CONFIDENCE, ge=0, le=1)
 
 
 def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_dir=None, runner=default_runner):
@@ -97,7 +98,8 @@ def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_d
                 runner(
                     project=project, site=(req.site or "").strip() or project, scan_dir=scan_dir, e57_path=e57_path,
                     weights=weights, tags_dir=tags_dir, docs_dir=docs_dir, review_threshold=req.review_threshold,
-                    merge_radius=req.merge_radius, cabinet_radius=req.cabinet_radius, progress=progress,
+                    merge_radius=req.merge_radius, cabinet_radius=req.cabinet_radius, min_confidence=req.min_confidence,
+                    progress=progress,
                 )
                 run.update(state="done", step="done", progress=1.0)
             except Exception as e:

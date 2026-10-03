@@ -75,6 +75,7 @@ Path: `data/tags/<project-slug>.json`. Slug: keep `[A-Za-z0-9._-]`, change each 
 ```
 
 - The PRD fields are required. `scan`, `generated_at` (RFC 3339, UTC), and the box fields `confidence` and `ocr_text` are extras.
+- `min_confidence` (extra): the pipeline drops a device with a confidence below this floor. The review slider works above it. The floor comes from the synthetic validation split, never from the real test set.
 - `confidence`: device confidence, rounded to 3 decimals.
 - The "unassigned" tag has `id: "tag-unassigned"`, `cabinet: "unassigned"`, and `anchor` = mean of its device anchors, or null.
 - Document `kind`: `manual`, `drawing`, `maintenance_report`, `inspection_report`.
@@ -96,7 +97,7 @@ FastAPI's own `/docs` page must be off (`docs_url=None`, `redoc_url=None`), beca
 | GET | `/api/scan` | `manifest.json`. Pano paths become URLs: `/scan/panos/sweep-NN.jpg`. |
 | GET | `/scan/{path}` | Static files from `data/scan/`. |
 | GET | `/documents/{path}` | Static files from `docs/`. |
-| POST | `/api/runs` | Body `{project, site?, review_threshold?, merge_radius?, cabinet_radius?}`. Starts the pipeline in a background thread. 202 `{run_id}`. 409 when a run is active. 400 when `project` is empty. 503 when the weights are missing. |
+| POST | `/api/runs` | Body `{project, site?, review_threshold?, merge_radius?, cabinet_radius?, min_confidence?}`. Starts the pipeline in a background thread. 202 `{run_id}`. 409 when a run is active. 400 when `project` is empty. 503 when the weights are missing. |
 | GET | `/api/runs/{run_id}` | `{run_id, project, state: "running" | "done" | "failed", step, progress (0 to 1), message}`. |
 | GET | `/api/tags/{project}` | The tag file, or 404. |
 | PUT | `/api/tags/{project}` | Validate and save an edited tag file. Returns the saved file. 422 when invalid. |

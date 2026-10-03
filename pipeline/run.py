@@ -17,6 +17,10 @@ DEVICE_TYPE = "REX615"
 SWEEPS_SHARE = 0.9
 
 
+MIN_CONFIDENCE = 0.5
+TILE_CONFIDENCE = 0.25
+
+
 def pano_boxes(specs, detections, pano_width, pano_height):
     """Per-tile ((x0, y0, x1, y1), score) lists to NMS-merged equirect boxes: list of (box, score)."""
     boxes, scores, edges = [], [], []
@@ -64,6 +68,7 @@ def run_pipeline(
     review_threshold=0.5,
     merge_radius=0.2,
     cabinet_radius=2.0,
+    min_confidence=MIN_CONFIDENCE,
     progress=None,
     detector=None,
     ocr=None,
@@ -79,7 +84,7 @@ def run_pipeline(
     if detector is None:
         from pipeline.detect import Detector
 
-        detector = Detector(weights)
+        detector = Detector(weights, conf=min(TILE_CONFIDENCE, min_confidence))
 
     @cache
     def load_grid(sid):
@@ -127,7 +132,7 @@ def run_pipeline(
 
     progress("merge", SWEEPS_SHARE, f"merging {len(device_obs)} device and {len(label_obs)} label observations")
     geometry = [(sid, position, rotation) for sid, _, position, rotation in sweeps]
-    groups = merge(device_obs, merge_radius)
+    groups = [g for g in merge(device_obs, merge_radius) if g.score >= min_confidence]
     labels = [g for g in merge(label_obs, merge_radius) if cabinets.confirmed(g, geometry, load_grid)]
     assignment = cabinets.assign([g.anchor for g in groups], [g.anchor for g in labels], cabinet_radius)
     docs = documents.lookup(docs_dir, DEVICE_TYPE, project)
@@ -153,6 +158,7 @@ def run_pipeline(
         project, site or project, review_threshold, merge_radius, cabinet_radius, Path(e57_path).name,
         [(g.text, g.anchor) for g in labels], entries,
     )
+    data["min_confidence"] = min_confidence
     progress("write", 0.98, "writing the tag file")
     data = tagfile.save(tags_dir, data)
     progress("done", 1.0, f"{len(groups)} devices, {len(labels)} cabinet labels")
