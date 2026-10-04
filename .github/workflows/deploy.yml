@@ -1,0 +1,51 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: verda
+      url: ${{ vars.DEPLOY_URL }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: viewer/package-lock.json
+
+      - name: Build the viewer
+        working-directory: viewer
+        run: |
+          npm ci
+          npm run build
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host verda\n  HostName %s\n  User tagva\n  IdentityFile ~/.ssh/deploy\n  IdentitiesOnly yes\n' "${{ vars.DEPLOY_HOST }}" > ~/.ssh/config
+
+      - name: Upload the app
+        run: rsync -azR --delete --exclude __pycache__ pipeline docs pyproject.toml uv.lock viewer/dist verda:/srv/tagva/app/
+
+      - name: Install the packages and restart the API
+        run: ssh verda 'cd /srv/tagva/app && uv sync --frozen --python 3.12 && sudo systemctl restart tagva-api'
+
+      - name: Check the API
+        run: curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-all-errors "${{ vars.DEPLOY_URL }}/api/projects"

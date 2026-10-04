@@ -1,0 +1,21 @@
+{$TAGVA_HOST} {
+	encode zstd gzip
+
+	header {
+		Cross-Origin-Opener-Policy same-origin
+		Cross-Origin-Embedder-Policy require-corp
+		Cross-Origin-Resource-Policy same-origin
+		-Server
+	}
+
+	@api path /api/* /scan/* /documents/* /models/* /synth/*
+	handle @api {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	handle {
+		root * /srv/tagva/app/viewer/dist
+		try_files {path} /index.html
+		file_server
+	}
+}

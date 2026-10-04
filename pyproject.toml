@@ -27,3 +27,12 @@ package = false
 
 [tool.pytest.ini_options]
 markers = ["slow: needs cloud_0.e57 and real models, takes minutes"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]

@@ -1,0 +1,24 @@
+[Unit]
+Description=Tagva pipeline API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=tagva
+Group=tagva
+WorkingDirectory=/srv/tagva/app
+Environment=REX_E57=/srv/tagva/data/cloud_0.e57
+Environment=REX_SCAN_DIR=/srv/tagva/data/scan
+Environment=REX_WEIGHTS=/srv/tagva/data/models/rex615.pt
+Environment=REX_TAGS_DIR=/srv/tagva/data/tags
+Environment=REX_SYNTH_DIR=/srv/tagva/data/synth
+Environment=REX_DOCS_DIR=/srv/tagva/app/docs
+ExecStart=/srv/tagva/app/.venv/bin/uvicorn pipeline.api:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/srv/tagva
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
