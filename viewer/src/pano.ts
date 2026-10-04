@@ -226,6 +226,11 @@ export class PanoView {
     this.onChange();
   }
 
+  currentTexture(): THREE.Texture | null {
+    const t = this.material.uniforms.tex1.value as THREE.Texture;
+    return this.sweep && t.userData.sweep === this.sweep.id ? t : null;
+  }
+
   setBoxes(items: PanoBox[]) {
     const u = this.material.uniforms;
     const n = Math.min(items.length, MAX_BOXES);

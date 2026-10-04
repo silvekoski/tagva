@@ -13,3 +13,4 @@ runs/
 .venv-bpy/
 .ruff_cache/
 .pytest_cache/
+*.onnx

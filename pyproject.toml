@@ -10,6 +10,15 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "pytest",
+    "torch==2.14.1",
+    "torchvision==0.29.1",
+    "ultralytics==8.4.172",
+    "open3d==0.20.0",
+    "paddlepaddle==3.3.1",
+    "paddleocr==3.7.0",
+    "onnx==1.23.1",
+    "onnxslim==0.1.97",
+    "onnxruntime==1.30.0",
 ]
 
 [tool.uv]

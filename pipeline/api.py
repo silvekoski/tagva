@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -15,7 +16,7 @@ from pydantic import BaseModel, Field
 from pipeline import tagfile
 from pipeline.anchor import box_anchor
 from pipeline.documents import slug
-from pipeline.run import MIN_CONFIDENCE, run_pipeline
+from pipeline.run import MIN_CONFIDENCE, TILE_CONFIDENCE, run_pipeline
 
 ROOT = Path(__file__).resolve().parent.parent
 CORS_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -31,7 +32,7 @@ def env_path(name, default):
 def _detector(weights, mtime):
     from pipeline.detect import Detector
 
-    return Detector(weights)
+    return Detector(weights, conf=TILE_CONFIDENCE)
 
 
 def default_runner(**kwargs):
@@ -150,6 +151,13 @@ def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_d
         box = (float(np.mod(u, W)) - RAYCAST_BOX / 2, v - RAYCAST_BOX / 2, RAYCAST_BOX, RAYCAST_BOX)
         anchor, _ = box_anchor(range_grid(sweep), np.array(s["rotation"]), np.array(s["position"]), box, W, H)
         return {"anchor": tagfile.point(anchor)}
+
+    @app.get("/models/rex615.onnx")
+    def onnx_model():
+        path = weights.with_suffix(".onnx")
+        if not path.is_file():
+            raise HTTPException(404, f"browser model not found: {path.name}")
+        return FileResponse(path, media_type="application/octet-stream")
 
     app.mount("/scan", StaticFiles(directory=scan_dir, check_dir=False), name="scan")
     app.mount("/documents", StaticFiles(directory=docs_dir, check_dir=False), name="documents")

@@ -139,3 +139,16 @@ def test_raycast(env):
     assert np.allclose([r["anchor"][k] for k in "xyz"], expect, atol=1e-3)
     assert client.get("/api/raycast", params={"sweep": "sweep-09", "u": u, "v": v}).status_code == 404
     assert client.get("/api/raycast", params={"sweep": "sweep-00", "u": u, "v": -5}).status_code == 422
+
+
+def test_onnx_model_route(tmp_path):
+    from fastapi.testclient import TestClient
+
+    from pipeline.api import create_app
+
+    weights = tmp_path / "rex615.pt"
+    client = TestClient(create_app(scan_dir=tmp_path, weights=weights, tags_dir=tmp_path, docs_dir=tmp_path))
+    assert client.get("/models/rex615.onnx").status_code == 404
+    (tmp_path / "rex615.onnx").write_bytes(b"onnx")
+    r = client.get("/models/rex615.onnx")
+    assert r.status_code == 200 and r.content == b"onnx"

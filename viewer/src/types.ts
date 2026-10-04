@@ -63,6 +63,7 @@ export interface TagFile {
   review_threshold: number;
   merge_radius: number;
   cabinet_radius: number;
+  min_confidence?: number;
   scan?: string;
   generated_at?: string;
   tags: Tag[];
