@@ -16,3 +16,7 @@ export function reviewReasons(device: Device, threshold: number) {
   const rest = device.review_reasons.filter((r) => r !== "low_confidence");
   return device.confidence < threshold ? ["low_confidence", ...rest] : rest;
 }
+
+export const isReview = (device: Device, threshold: number) => reviewReasons(device, threshold).length > 0;
+
+export const deviceLabel = (d: Device) => d.name || d.device_type;

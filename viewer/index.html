@@ -1,76 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>REX615 scan player</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <a class="skip" href="#stage-canvas">Skip to the view</a>
-    <header class="topbar">
-      <h1 class="brand">REX615 scan player</h1>
-      <form id="run-form" class="run">
-        <div class="field">
-          <label for="project">Project</label>
-          <input id="project" name="project" autocomplete="off" spellcheck="false" required />
-        </div>
-        <div class="field">
-          <label for="site">Site</label>
-          <input id="site" name="site" autocomplete="off" spellcheck="false" />
-        </div>
-        <button id="run" class="primary" type="submit">Run detection</button>
-        <button id="detect-browser" type="button" title="Run the REX615 detector in this browser on the current panorama">Detect in browser</button>
-      </form>
-      <div class="field threshold">
-        <label for="threshold">Review threshold</label>
-        <div class="slider">
-          <input id="threshold" type="range" min="0" max="1" step="0.01" value="0.9" />
-          <output id="threshold-value" for="threshold">0.90</output>
-        </div>
-      </div>
-      <p class="counts"><span id="device-count">0</span> devices, <span id="review-count">0</span> for review</p>
-      <button id="show-boxes" type="button" aria-pressed="false">Show boxes</button>
-      <div class="mode" role="group" aria-label="View mode">
-        <button id="mode-pano" type="button" aria-pressed="true">Panorama</button>
-        <button id="mode-dollhouse" type="button" aria-pressed="false">Dollhouse</button>
-      </div>
-    </header>
-    <div id="run-status" class="run-status" role="status" aria-live="polite" hidden>
-      <span id="run-text"></span>
-      <progress id="run-progress" max="1" value="0" aria-label="Run progress"></progress>
-    </div>
-    <main class="layout">
-      <nav id="navigator" class="navigator" aria-label="Scan positions and tags">
-        <details open>
-          <summary>Scan positions</summary>
-          <ol id="sweep-list" class="sweep-list"></ol>
-        </details>
-        <details open>
-          <summary>Tags</summary>
-          <p id="tag-empty" class="muted">Enter a project label to load its tags.</p>
-          <ul id="tag-list" class="tag-list"></ul>
-        </details>
-      </nav>
-      <div id="stage" class="stage">
-        <canvas
-          id="stage-canvas"
-          tabindex="0"
-          role="application"
-          aria-roledescription="3D view"
-          aria-label="Panorama view. Drag, or use the arrow keys, to look around. Use the wheel, a pinch, or the plus and minus keys to zoom."
-        ></canvas>
-        <div id="overlay" class="overlay"></div>
-        <div id="cut" class="cut field" hidden>
-          <label for="cut-height">Cut height (m)</label>
-          <input id="cut-height" type="range" min="0.5" max="5" step="0.1" value="2.6" />
-          <output id="cut-value" for="cut-height">2.6</output>
-        </div>
-        <p id="stage-status" class="stage-status" role="status" aria-live="polite" hidden></p>
-      </div>
-      <aside id="panel" class="panel" aria-labelledby="panel-title" hidden></aside>
-    </main>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
