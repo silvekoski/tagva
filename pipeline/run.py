@@ -9,7 +9,7 @@ import numpy as np
 
 from pipeline import cabinets, documents, review, tagfile, tiles
 from pipeline.anchor import box_anchor
-from pipeline.merge import Observation, merge
+from pipeline.merge import Observation, merge, one_per_sweep
 from pipeline.scan import Scan
 from pipeline.sphere import equirect_to_dirs
 
@@ -132,7 +132,7 @@ def run_pipeline(
 
     progress("merge", SWEEPS_SHARE, f"merging {len(device_obs)} device and {len(label_obs)} label observations")
     geometry = [(sid, position, rotation) for sid, _, position, rotation in sweeps]
-    groups = [g for g in merge(device_obs, merge_radius) if g.score >= min_confidence]
+    groups = [g for g in one_per_sweep(merge(device_obs, merge_radius)) if g.score >= min_confidence]
     labels = [g for g in merge(label_obs, merge_radius) if cabinets.confirmed(g, geometry, load_grid)]
     assignment = cabinets.assign([g.anchor for g in groups], [g.anchor for g in labels], cabinet_radius)
     docs = documents.lookup(docs_dir, DEVICE_TYPE, project)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from pipeline.merge import Observation, merge, ray_distance, text_key, vote_text
+from pipeline.merge import Observation, merge, one_per_sweep, ray_distance, text_key, vote_text
 
 ORIGIN = np.zeros(3)
 
@@ -60,3 +60,16 @@ def test_vote_text_counts_sweeps_and_keeps_the_spaced_variant():
 
 def test_empty_input():
     assert merge([], 0.2) == []
+
+
+def test_one_per_sweep_keeps_best_box_of_each_sweep():
+    o = np.zeros(3)
+    ray = np.array([1.0, 0.0, 0.0])
+    obs = [
+        Observation("sweep-02", o, ray, (0, 0, 10, 10), 0.9, anchor=np.array([1.0, 0.0, 0.0])),
+        Observation("sweep-02", o, ray, (5, 0, 10, 10), 0.5, anchor=np.array([1.1, 0.0, 0.0])),
+        Observation("sweep-03", o, ray, (0, 0, 10, 10), 0.8, anchor=np.array([1.04, 0.0, 0.0])),
+    ]
+    (g,) = one_per_sweep(merge(obs, 0.2))
+    assert sorted((x.sweep, x.score) for x in g.observations) == [("sweep-02", 0.9), ("sweep-03", 0.8)]
+    assert np.allclose(g.anchor, [1.02, 0.0, 0.0])

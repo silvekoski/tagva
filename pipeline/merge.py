@@ -98,3 +98,17 @@ def merge(observations, radius):
         else:
             groups.append(Group([o], None))
     return groups
+
+
+def one_per_sweep(groups):
+    """Keep the best observation of each sweep in each group (PRD: at most one box per device per panorama)."""
+    out = []
+    for g in groups:
+        best = {}
+        for o in g.observations:
+            if o.sweep not in best or o.score > best[o.sweep].score:
+                best[o.sweep] = o
+        obs = list(best.values())
+        anchors = [o.anchor for o in obs if o.anchor is not None]
+        out.append(Group(obs, np.median(anchors, axis=0) if anchors else g.anchor))
+    return out
