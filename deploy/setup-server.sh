@@ -11,6 +11,7 @@ command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | env UV_
 
 id tagva >/dev/null 2>&1 || useradd --system --create-home --home-dir /srv/tagva --shell /bin/bash tagva
 install -d -o tagva -g tagva /srv/tagva/app /srv/tagva/data /srv/tagva/data/tags
+chmod 711 /srv/tagva
 install -d -m 700 -o tagva -g tagva /srv/tagva/.ssh
 install -m 600 -o tagva -g tagva "$deploy_key" /srv/tagva/.ssh/authorized_keys
 
