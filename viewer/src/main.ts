@@ -3,7 +3,7 @@ import { getRun, getScan, getTags, putTags, raycast, startRun } from "./api";
 import { $, h } from "./dom";
 import { BrowserDetector, MIN_CONFIDENCE, type Detection } from "./detect";
 import { Dollhouse } from "./dollhouse";
-import { panoPixel, toThree } from "./geo";
+import { panoDir, panoPixel, toThree } from "./geo";
 import { Overlay, type Marker } from "./overlay";
 import { deviceLabel, Panel } from "./panel";
 import { PanoView } from "./pano";
@@ -13,6 +13,7 @@ import type { Box, Device, Manifest, Point3, Sweep, Tag, TagFile } from "./types
 const REVIEW_COLOR = new THREE.Color(1, 0.69, 0.13);
 const OK_COLOR = new THREE.Color(0.24, 0.86, 0.52);
 const BROWSER_COLOR = new THREE.Color(0.2, 0.85, 1);
+const CSS_COLOR = { review: "var(--review)", ok: "var(--ok)", browser: "var(--browser)" };
 
 const canvas = $<HTMLCanvasElement>("stage-canvas");
 const stage = $("stage");
@@ -21,6 +22,7 @@ const projectInput = $<HTMLInputElement>("project");
 const siteInput = $<HTMLInputElement>("site");
 const runButton = $<HTMLButtonElement>("run");
 const detectButton = $<HTMLButtonElement>("detect-browser");
+const showBoxesButton = $<HTMLButtonElement>("show-boxes");
 const runStatus = $("run-status");
 const thresholdInput = $<HTMLInputElement>("threshold");
 const cutInput = $<HTMLInputElement>("cut-height");
@@ -60,6 +62,7 @@ function start(manifest: Manifest) {
   const overlay = new Overlay($("overlay"));
   const browserDetector = new BrowserDetector(renderer, manifest);
   const browserBoxes = new Map<string, Detection[]>();
+  let showAll = false;
   const sweepById = new Map(manifest.sweeps.map((s) => [s.id, s]));
 
   let file: TagFile | null = null;
@@ -102,8 +105,31 @@ function start(manifest: Manifest) {
     return null;
   };
 
+  function sweepBoxes() {
+    const sid = pano.sweep?.id;
+    if (!sid) return [];
+    const selected = panel.selection?.device;
+    const devices = showAll ? (file?.tags ?? []).flatMap((t) => t.devices) : selected ? [selected] : [];
+    return [
+      ...devices.flatMap((d) => {
+        const kind = isReview(d) ? ("review" as const) : ("ok" as const);
+        return d.boxes.filter((b) => b.scan_position === sid).map((box) => ({ box, kind, score: box.confidence ?? d.confidence, label: deviceLabel(d) }));
+      }),
+      ...(browserBoxes.get(sid) ?? []).map((x) => ({ box: x.box, kind: "browser" as const, score: x.score, label: "Browser detection" })),
+    ];
+  }
+
+  function boxLabels(): Marker[] {
+    if (!showAll || mode !== "pano" || !pano.sweep) return [];
+    const origin = toThree(pano.sweep.position);
+    return sweepBoxes().map(({ box, kind, score, label }) => ({
+      pos: origin.clone().add(panoDir(box.x, box.y, manifest.pano_width, manifest.pano_height)),
+      el: h("span", { class: "box-label", style: `--box-color: ${CSS_COLOR[kind]}`, title: label }, score.toFixed(2)),
+    }));
+  }
+
   function buildMarkers() {
-    const ms: Marker[] = [];
+    const ms: Marker[] = [...boxLabels()];
     for (const t of file?.tags ?? []) {
       if (t.anchor && t.id !== "tag-unassigned") {
         const n = t.devices.length;
@@ -249,14 +275,8 @@ function start(manifest: Manifest) {
   }
 
   function updateBoxes() {
-    const d = panel.selection?.device;
-    const sid = pano.sweep?.id;
-    if (!sid) return pano.setBoxes([]);
-    const color = d && isReview(d) ? REVIEW_COLOR : OK_COLOR;
-    pano.setBoxes([
-      ...(d?.boxes ?? []).filter((b) => b.scan_position === sid).map((box) => ({ box, color })),
-      ...(browserBoxes.get(sid) ?? []).map((x) => ({ box: x.box, color: BROWSER_COLOR })),
-    ]);
+    const colors = { review: REVIEW_COLOR, ok: OK_COLOR, browser: BROWSER_COLOR };
+    pano.setBoxes(sweepBoxes().map(({ box, kind }) => ({ box, color: colors[kind] })));
     requestRender();
   }
 
@@ -279,6 +299,7 @@ function start(manifest: Manifest) {
     setParam("sweep", s.id);
     markSweep();
     updateBoxes();
+    if (showAll) buildMarkers();
     if (panel.selection && !panel.editing) panel.render();
     cancelAnimationFrame(frame);
     draw(performance.now());
@@ -519,6 +540,7 @@ function start(manifest: Manifest) {
       const found = res.detections.filter((x) => x.score >= floor).sort((a, b) => b.score - a.score);
       browserBoxes.set(sweep.id, found);
       updateBoxes();
+      if (showAll) buildMarkers();
       const scores = found.map((x) => x.score.toFixed(2)).join(", ");
       showRun(
         `Browser detection on ${sweep.id}: ${found.length} REX615 ${found.length === 1 ? "plate" : "plates"}${scores ? ` (${scores})` : ""} ` +
@@ -529,6 +551,18 @@ function start(manifest: Manifest) {
       showRun(`Browser detection failed: ${(err as Error).message}`);
     } finally {
       detectButton.disabled = false;
+    }
+  });
+
+  showBoxesButton.addEventListener("click", () => {
+    showAll = !showAll;
+    showBoxesButton.setAttribute("aria-pressed", String(showAll));
+    updateBoxes();
+    buildMarkers();
+    const sid = pano.sweep?.id;
+    if (showAll && sid) {
+      const n = sweepBoxes().length;
+      say(`${n} detected ${n === 1 ? "box" : "boxes"} on ${sid}. Orange needs review, green is OK, cyan is from the browser.`, 6000);
     }
   });
 

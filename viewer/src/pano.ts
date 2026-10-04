@@ -4,7 +4,7 @@ import { DepthGrid } from "./depth";
 import { CAMERA_HEIGHT, toThree } from "./geo";
 import type { Box, Manifest, Sweep } from "./types";
 
-const MAX_BOXES = 16;
+const MAX_BOXES = 64;
 const SPHERE_RADIUS = 5;
 const FADE_MS = 700;
 const CACHE_SIZE = 2;

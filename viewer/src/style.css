@@ -9,6 +9,7 @@
   --accent-text: #06121f;
   --ok: #3ddc84;
   --review: #ffb020;
+  --browser: #33d9ff;
   --focus: #ffd84d;
   --radius: 6px;
   color-scheme: dark;
@@ -376,6 +377,19 @@ button.link[aria-current] {
   background: rgb(240 244 248 / 0.92);
   color: #111;
   translate: -50% -50%;
+}
+
+.box-label {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgb(17 20 24 / 0.86);
+  border: 1px solid var(--box-color, var(--ok));
+  color: var(--text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  translate: 0 calc(-100% - 2px);
 }
 
 .pin.device {
