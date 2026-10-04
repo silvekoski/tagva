@@ -1,0 +1,1160 @@
+{
+  "project": "VEO-DEMO.",
+  "site": "VEO-DEMO.",
+  "review_threshold": 0.9,
+  "merge_radius": 0.2,
+  "cabinet_radius": 2.0,
+  "tags": [
+    {
+      "id": "tag-001",
+      "cabinet": "200",
+      "anchor": {
+        "x": -2.3163,
+        "y": -2.4992,
+        "z": 1.3921
+      },
+      "path": [
+        "VEO-DEMO.",
+        "200"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-002",
+      "cabinet": "2075A20761",
+      "anchor": {
+        "x": -9.0467,
+        "y": 1.3154,
+        "z": 1.7202
+      },
+      "path": [
+        "VEO-DEMO.",
+        "2075A20761"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-003",
+      "cabinet": "H01 PT1",
+      "anchor": {
+        "x": -5.7511,
+        "y": -5.6172,
+        "z": 1.4105
+      },
+      "path": [
+        "VEO-DEMO.",
+        "H01 PT1"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-001",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-01",
+              "x": 6799.2,
+              "y": 1952.5,
+              "width": 25.2,
+              "height": 37.8,
+              "confidence": 0.915,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-02",
+              "x": 6618.2,
+              "y": 1944.3,
+              "width": 22.7,
+              "height": 37.6,
+              "confidence": 0.864,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 6790.6,
+              "y": 1912.0,
+              "width": 35.0,
+              "height": 50.1,
+              "confidence": 0.909,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 7028.4,
+              "y": 1871.6,
+              "width": 68.0,
+              "height": 71.1,
+              "confidence": 0.944,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 7325.3,
+              "y": 1829.4,
+              "width": 93.8,
+              "height": 83.8,
+              "confidence": 0.953,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 7657.8,
+              "y": 1799.9,
+              "width": 157.4,
+              "height": 94.2,
+              "confidence": 0.96,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 8116.4,
+              "y": 1786.4,
+              "width": 141.4,
+              "height": 93.2,
+              "confidence": 0.961,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 334.8,
+              "y": 1790.5,
+              "width": 147.1,
+              "height": 100.7,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 961.5,
+              "y": 1403.4,
+              "width": 229.8,
+              "height": 279.6,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 7394.4,
+              "y": 1234.6,
+              "width": 527.5,
+              "height": 313.0,
+              "confidence": 0.962,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 6701.7,
+              "y": 1601.5,
+              "width": 100.3,
+              "height": 209.3,
+              "confidence": 0.953,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 6470.9,
+              "y": 1779.7,
+              "width": 64.5,
+              "height": 115.0,
+              "confidence": 0.908,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 6390.0,
+              "y": 1856.7,
+              "width": 20.8,
+              "height": 76.0,
+              "confidence": 0.776,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 6350.7,
+              "y": 1902.9,
+              "width": 16.3,
+              "height": 55.9,
+              "confidence": 0.725,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 6281.8,
+              "y": 1935.2,
+              "width": 15.6,
+              "height": 41.9,
+              "confidence": 0.483,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -5.7122,
+            "y": -5.8685,
+            "z": 1.8533
+          },
+          "confidence": 0.963,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr",
+            "anchor_variance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-004",
+      "cabinet": "H02 STATION TRANSFORMER",
+      "anchor": {
+        "x": -5.7509,
+        "y": -4.5232,
+        "z": 1.4009
+      },
+      "path": [
+        "VEO-DEMO.",
+        "H02 STATION TRANSFORMER"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-002",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-01",
+              "x": 6908.4,
+              "y": 1938.8,
+              "width": 52.7,
+              "height": 42.1,
+              "confidence": 0.917,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-02",
+              "x": 6716.3,
+              "y": 1924.3,
+              "width": 28.9,
+              "height": 47.5,
+              "confidence": 0.898,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 6964.1,
+              "y": 1879.1,
+              "width": 52.1,
+              "height": 64.8,
+              "confidence": 0.944,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 7330.4,
+              "y": 1823.6,
+              "width": 93.9,
+              "height": 95.4,
+              "confidence": 0.956,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 7774.2,
+              "y": 1793.3,
+              "width": 130.7,
+              "height": 94.6,
+              "confidence": 0.961,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 13.4,
+              "y": 1777.1,
+              "width": 180.3,
+              "height": 112.6,
+              "confidence": 0.967,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 467.1,
+              "y": 1806.2,
+              "width": 156.3,
+              "height": 92.4,
+              "confidence": 0.959,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 804.8,
+              "y": 1835.3,
+              "width": 98.2,
+              "height": 81.4,
+              "confidence": 0.954,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 1545.5,
+              "y": 1704.7,
+              "width": 62.2,
+              "height": 152.3,
+              "confidence": 0.924,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 973.6,
+              "y": 1420.1,
+              "width": 304.0,
+              "height": 274.7,
+              "confidence": 0.964,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 7470.2,
+              "y": 1233.0,
+              "width": 463.3,
+              "height": 347.6,
+              "confidence": 0.966,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 6690.7,
+              "y": 1581.6,
+              "width": 173.9,
+              "height": 219.8,
+              "confidence": 0.951,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 6497.1,
+              "y": 1772.9,
+              "width": 40.6,
+              "height": 115.0,
+              "confidence": 0.913,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 6418.2,
+              "y": 1855.1,
+              "width": 22.6,
+              "height": 79.1,
+              "confidence": 0.725,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 6315.3,
+              "y": 1909.7,
+              "width": 19.3,
+              "height": 52.0,
+              "confidence": 0.362,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -5.7149,
+            "y": -4.7892,
+            "z": 1.8495
+          },
+          "confidence": 0.967,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-005",
+      "cabinet": "H03 METERING",
+      "anchor": {
+        "x": -5.7375,
+        "y": -3.519,
+        "z": 1.4023
+      },
+      "path": [
+        "VEO-DEMO.",
+        "H03 METERING"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-003",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-01",
+              "x": 7056.8,
+              "y": 1920.8,
+              "width": 63.1,
+              "height": 49.3,
+              "confidence": 0.928,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-02",
+              "x": 6843.6,
+              "y": 1900.3,
+              "width": 41.8,
+              "height": 56.8,
+              "confidence": 0.918,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 7198.8,
+              "y": 1840.3,
+              "width": 100.1,
+              "height": 80.1,
+              "confidence": 0.946,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 7734.9,
+              "y": 1790.2,
+              "width": 150.4,
+              "height": 103.4,
+              "confidence": 0.962,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 90.1,
+              "y": 1779.1,
+              "width": 174.6,
+              "height": 110.6,
+              "confidence": 0.961,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 542.0,
+              "y": 1811.4,
+              "width": 113.6,
+              "height": 90.8,
+              "confidence": 0.96,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 871.3,
+              "y": 1843.5,
+              "width": 106.0,
+              "height": 83.6,
+              "confidence": 0.951,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 1089.4,
+              "y": 1875.2,
+              "width": 83.0,
+              "height": 66.0,
+              "confidence": 0.944,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 1708.0,
+              "y": 1826.5,
+              "width": 55.9,
+              "height": 90.2,
+              "confidence": 0.918,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 1542.0,
+              "y": 1708.9,
+              "width": 63.2,
+              "height": 142.8,
+              "confidence": 0.928,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 872.9,
+              "y": 1382.2,
+              "width": 292.4,
+              "height": 312.8,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 7451.8,
+              "y": 1227.7,
+              "width": 465.4,
+              "height": 349.3,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 6690.2,
+              "y": 1586.2,
+              "width": 170.0,
+              "height": 215.9,
+              "confidence": 0.946,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 6514.4,
+              "y": 1777.5,
+              "width": 70.6,
+              "height": 115.1,
+              "confidence": 0.902,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 6366.0,
+              "y": 1873.2,
+              "width": 19.6,
+              "height": 67.7,
+              "confidence": 0.517,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -5.7149,
+            "y": -3.7963,
+            "z": 1.8468
+          },
+          "confidence": 0.963,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-006",
+      "cabinet": "H04 SOLAR1",
+      "anchor": {
+        "x": -5.7578,
+        "y": -2.5185,
+        "z": 1.3992
+      },
+      "path": [
+        "VEO-DEMO.",
+        "H04 SOLAR1"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-004",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-01",
+              "x": 7256.1,
+              "y": 1897.6,
+              "width": 79.4,
+              "height": 62.2,
+              "confidence": 0.943,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-02",
+              "x": 7026.8,
+              "y": 1865.5,
+              "width": 70.2,
+              "height": 73.4,
+              "confidence": 0.94,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 7555.7,
+              "y": 1799.5,
+              "width": 161.5,
+              "height": 95.1,
+              "confidence": 0.96,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 74.4,
+              "y": 1790.9,
+              "width": 150.1,
+              "height": 94.7,
+              "confidence": 0.964,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 602.5,
+              "y": 1816.4,
+              "width": 110.6,
+              "height": 88.5,
+              "confidence": 0.955,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 913.7,
+              "y": 1851.9,
+              "width": 92.6,
+              "height": 77.0,
+              "confidence": 0.952,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 1138.5,
+              "y": 1885.9,
+              "width": 77.7,
+              "height": 62.8,
+              "confidence": 0.94,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 1295.1,
+              "y": 1907.5,
+              "width": 40.0,
+              "height": 52.1,
+              "confidence": 0.923,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 1806.8,
+              "y": 1886.8,
+              "width": 17.6,
+              "height": 63.9,
+              "confidence": 0.846,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 1706.1,
+              "y": 1824.9,
+              "width": 56.6,
+              "height": 91.5,
+              "confidence": 0.912,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 1477.6,
+              "y": 1687.2,
+              "width": 117.7,
+              "height": 161.0,
+              "confidence": 0.926,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 911.2,
+              "y": 1398.9,
+              "width": 243.5,
+              "height": 280.1,
+              "confidence": 0.965,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 7430.3,
+              "y": 1233.5,
+              "width": 461.9,
+              "height": 345.1,
+              "confidence": 0.965,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 6764.4,
+              "y": 1612.8,
+              "width": 110.6,
+              "height": 189.3,
+              "confidence": 0.949,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 6445.1,
+              "y": 1812.3,
+              "width": 30.8,
+              "height": 95.7,
+              "confidence": 0.886,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -5.7149,
+            "y": -2.7978,
+            "z": 1.8418
+          },
+          "confidence": 0.965,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-007",
+      "cabinet": "H05 SOLAR2",
+      "anchor": {
+        "x": -5.7613,
+        "y": -1.5193,
+        "z": 1.4038
+      },
+      "path": [
+        "VEO-DEMO.",
+        "H05 SOLAR2"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-005",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-01",
+              "x": 7533.6,
+              "y": 1878.4,
+              "width": 82.6,
+              "height": 66.1,
+              "confidence": 0.949,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-02",
+              "x": 7302.9,
+              "y": 1816.8,
+              "width": 128.2,
+              "height": 98.5,
+              "confidence": 0.954,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 8084.5,
+              "y": 1781.8,
+              "width": 149.7,
+              "height": 95.5,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 576.2,
+              "y": 1815.8,
+              "width": 112.9,
+              "height": 91.2,
+              "confidence": 0.958,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 955.3,
+              "y": 1857.3,
+              "width": 92.3,
+              "height": 73.6,
+              "confidence": 0.951,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 1173.9,
+              "y": 1890.0,
+              "width": 51.3,
+              "height": 60.9,
+              "confidence": 0.946,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 1327.8,
+              "y": 1915.1,
+              "width": 37.8,
+              "height": 51.2,
+              "confidence": 0.926,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 1427.1,
+              "y": 1930.3,
+              "width": 30.3,
+              "height": 44.1,
+              "confidence": 0.921,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 1856.4,
+              "y": 1918.5,
+              "width": 17.6,
+              "height": 76.1,
+              "confidence": 0.144,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 1805.0,
+              "y": 1884.9,
+              "width": 18.4,
+              "height": 66.2,
+              "confidence": 0.78,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 1686.7,
+              "y": 1816.6,
+              "width": 56.8,
+              "height": 93.6,
+              "confidence": 0.915,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 1503.4,
+              "y": 1692.1,
+              "width": 90.2,
+              "height": 151.3,
+              "confidence": 0.937,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 872.9,
+              "y": 1390.2,
+              "width": 320.5,
+              "height": 282.7,
+              "confidence": 0.964,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 7495.0,
+              "y": 1285.6,
+              "width": 427.2,
+              "height": 326.1,
+              "confidence": 0.967,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 6603.8,
+              "y": 1688.0,
+              "width": 68.1,
+              "height": 153.6,
+              "confidence": 0.929,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -5.7172,
+            "y": -1.7965,
+            "z": 1.839
+          },
+          "confidence": 0.967,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-008",
+      "cabinet": "LAMMINNEVA KX 27482",
+      "anchor": {
+        "x": -2.3336,
+        "y": -2.8419,
+        "z": 1.7268
+      },
+      "path": [
+        "VEO-DEMO.",
+        "LAMMINNEVA KX 27482"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-009",
+      "cabinet": "OKK1",
+      "anchor": {
+        "x": -2.3279,
+        "y": -1.9465,
+        "z": 2.3568
+      },
+      "path": [
+        "VEO-DEMO.",
+        "OKK1"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-010",
+      "cabinet": "OT1",
+      "anchor": {
+        "x": -2.724,
+        "y": -5.764,
+        "z": 1.5772
+      },
+      "path": [
+        "VEO-DEMO.",
+        "OT1"
+      ],
+      "devices": [
+        {
+          "device_id": "dev-006",
+          "name": "",
+          "device_type": "REX615",
+          "boxes": [
+            {
+              "scan_position": "sweep-02",
+              "x": 5974.1,
+              "y": 1962.2,
+              "width": 23.0,
+              "height": 41.9,
+              "confidence": 0.747,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-03",
+              "x": 5926.2,
+              "y": 1932.3,
+              "width": 40.3,
+              "height": 58.1,
+              "confidence": 0.382,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-04",
+              "x": 5860.0,
+              "y": 1880.3,
+              "width": 59.0,
+              "height": 88.9,
+              "confidence": 0.874,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-05",
+              "x": 5718.5,
+              "y": 1781.6,
+              "width": 83.9,
+              "height": 140.7,
+              "confidence": 0.924,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-06",
+              "x": 5393.6,
+              "y": 1576.9,
+              "width": 151.8,
+              "height": 262.3,
+              "confidence": 0.952,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-07",
+              "x": 3947.5,
+              "y": 1263.7,
+              "width": 671.5,
+              "height": 354.6,
+              "confidence": 0.941,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-08",
+              "x": 2764.5,
+              "y": 1475.4,
+              "width": 234.2,
+              "height": 315.0,
+              "confidence": 0.96,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-09",
+              "x": 3647.5,
+              "y": 1841.8,
+              "width": 163.0,
+              "height": 107.3,
+              "confidence": 0.963,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-10",
+              "x": 4206.7,
+              "y": 1833.2,
+              "width": 184.6,
+              "height": 113.0,
+              "confidence": 0.968,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-11",
+              "x": 4778.5,
+              "y": 1865.0,
+              "width": 112.1,
+              "height": 91.2,
+              "confidence": 0.962,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-12",
+              "x": 5120.4,
+              "y": 1899.9,
+              "width": 92.6,
+              "height": 74.8,
+              "confidence": 0.949,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-13",
+              "x": 5365.0,
+              "y": 1929.9,
+              "width": 44.8,
+              "height": 58.3,
+              "confidence": 0.945,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-14",
+              "x": 5518.8,
+              "y": 1949.9,
+              "width": 51.1,
+              "height": 50.0,
+              "confidence": 0.919,
+              "ocr_text": ""
+            },
+            {
+              "scan_position": "sweep-15",
+              "x": 5643.6,
+              "y": 1970.5,
+              "width": 26.7,
+              "height": 37.3,
+              "confidence": 0.891,
+              "ocr_text": ""
+            }
+          ],
+          "anchor": {
+            "x": -2.7617,
+            "y": -5.9057,
+            "z": 1.726
+          },
+          "confidence": 0.968,
+          "documents": [
+            {
+              "title": "rex615 operation manual",
+              "kind": "manual",
+              "url": "/documents/devices/REX615/rex615-operation-manual.pdf"
+            }
+          ],
+          "review": true,
+          "review_reasons": [
+            "empty_ocr"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag-011",
+      "cabinet": "TSK1",
+      "anchor": {
+        "x": -2.7197,
+        "y": -4.8711,
+        "z": 1.4797
+      },
+      "path": [
+        "VEO-DEMO.",
+        "TSK1"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-012",
+      "cabinet": "TSK2",
+      "anchor": {
+        "x": -2.7225,
+        "y": -4.0901,
+        "z": 1.5444
+      },
+      "path": [
+        "VEO-DEMO.",
+        "TSK2"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-013",
+      "cabinet": "VEOVE",
+      "anchor": {
+        "x": -2.7187,
+        "y": -6.2858,
+        "z": 2.2574
+      },
+      "path": [
+        "VEO-DEMO.",
+        "VEOVE"
+      ],
+      "devices": []
+    },
+    {
+      "id": "tag-014",
+      "cabinet": "VLK",
+      "anchor": {
+        "x": -2.7153,
+        "y": -6.556,
+        "z": 1.4171
+      },
+      "path": [
+        "VEO-DEMO.",
+        "VLK"
+      ],
+      "devices": []
+    }
+  ],
+  "scan": "cloud_0.e57",
+  "generated_at": "2026-10-04T02:56:11Z",
+  "min_confidence": 0.85
+}
