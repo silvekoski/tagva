@@ -19,6 +19,7 @@ dependencies = [
     "onnx==1.23.1",
     "onnxslim==0.1.97",
     "onnxruntime==1.30.0",
+    "pypdf==6.19.0",
 ]
 
 [tool.uv]

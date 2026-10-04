@@ -1,20 +1,16 @@
-import { CircleAlert, CircleCheck, ExternalLink, Pencil, TriangleAlert, X } from "lucide-react";
-import { useEffect, useRef, type ReactNode, type Ref } from "react";
+import { CircleAlert, CircleCheck, Pencil, TriangleAlert, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type Ref } from "react";
+import { DocumentsTab } from "@/components/documents-tab";
 import { TagEditor } from "@/components/tag-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { projectDocs } from "@/documents";
 import { cn } from "@/lib/utils";
 import type { Selection } from "@/player";
 import { deviceLabel, isReview, REASON_LABELS, reviewReasons } from "@/review";
 import type { Box, Device, Point3, Tag, TagFile } from "@/types";
-
-const KIND_LABELS: Record<string, string> = {
-  manual: "Manual",
-  drawing: "Drawing",
-  maintenance_report: "Maintenance report",
-  inspection_report: "Inspection report",
-};
 
 const fmtPoint = (p: Point3 | null) => (p ? `${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}` : "None");
 
@@ -59,6 +55,9 @@ function StatusIcon({ review }: { review: boolean }) {
 export function DetailsPanel(p: DetailsPanelProps) {
   const heading = useRef<HTMLHeadingElement>(null);
   const { tag, device } = p.selection;
+  const [tab, setTab] = useState("details");
+  const allDocs = useMemo(() => projectDocs(p.file), [p.file]);
+  const docs = device ? device.documents : allDocs.filter((d) => d.kind !== "manual");
 
   useEffect(() => {
     heading.current?.focus();
@@ -86,9 +85,25 @@ export function DetailsPanel(p: DetailsPanelProps) {
           <X aria-hidden="true" />
         </Button>
       </div>
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="px-4 pt-3 pb-6">{device ? <DeviceBody {...p} tag={tag} device={device} /> : <TagBody {...p} tag={tag} />}</div>
-      </ScrollArea>
+      <Tabs value={tab} onValueChange={setTab} className="min-h-0 flex-1 gap-0">
+        <TabsList className="mx-4 mt-3 w-auto self-stretch">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="documents">
+            Documents
+            <span className="rounded-sm bg-muted px-1.5 font-mono text-xs text-muted-foreground">{docs.length}</span>
+          </TabsTrigger>
+        </TabsList>
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-4 pt-3 pb-6">
+            <TabsContent value="details">
+              {device ? <DeviceBody {...p} tag={tag} device={device} /> : <TagBody {...p} tag={tag} />}
+            </TabsContent>
+            <TabsContent value="documents">
+              <DocumentsTab docs={docs} allDocs={allDocs} deviceType={device?.device_type} project={p.file.project} />
+            </TabsContent>
+          </div>
+        </ScrollArea>
+      </Tabs>
     </aside>
   );
 }
@@ -194,30 +209,6 @@ function DeviceBody(p: DetailsPanelProps & { tag: Tag; device: Device }) {
         </ul>
       ) : (
         <p>No boxes.</p>
-      )}
-      <Heading>Documents</Heading>
-      {d.documents.length ? (
-        <ul className="flex flex-col gap-1.5">
-          {d.documents.map((doc) => (
-            <li key={doc.url} className="flex items-center justify-between gap-2">
-              <a
-                href={doc.url}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
-              >
-                {doc.title}
-                <ExternalLink aria-hidden="true" className="size-3.5" />
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-              <Badge variant="outline" className="shrink-0">
-                {KIND_LABELS[doc.kind] ?? doc.kind}
-              </Badge>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No documents.</p>
       )}
       {p.editing ? (
         <TagEditor

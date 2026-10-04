@@ -1,12 +1,20 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type ProxyOptions } from "vite";
 
 declare const process: { env: Record<string, string | undefined> };
 
 const api = process.env.VIEWER_API ?? "http://127.0.0.1:8000";
-const proxy = { "/api": api, "/scan": api, "/documents": api, "/models": api };
 const isolation = (coep: string) => ({ "Cross-Origin-Opener-Policy": "same-origin", "Cross-Origin-Embedder-Policy": coep });
+const embeddable: ProxyOptions = {
+  target: api,
+  configure: (p) =>
+    p.on("proxyRes", (res) => {
+      res.headers["cross-origin-embedder-policy"] = "require-corp";
+      res.headers["cross-origin-resource-policy"] = "same-origin";
+    }),
+};
+const proxy = { "/api": api, "/scan": api, "/documents": embeddable, "/models": api };
 
 const tweakcnPreview = (): Plugin => ({
   name: "tweakcn-live-preview",

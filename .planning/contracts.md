@@ -87,6 +87,7 @@ Path: `data/tags/<project-slug>.json`. Slug: keep `[A-Za-z0-9._-]`, change each 
 - `docs/devices/<device_type>/`: each file is a `manual`.
 - `docs/projects/<project-slug>/drawings/`, `maintenance-reports/`, `inspection-reports/`: kind from the folder.
 - URL: `/documents/<path below docs/>`.
+- `<pdf stem>.index.json` next to a manual PDF: the search index from `python -m pipeline.doc_index`. Fields: `pages`, `bytes`, `outline` (`title`, `page`, `level`), `text` (one string per page). Each `page` is the 1-based PDF page index, so `#page=N` opens it. The script moves an outline entry to the next page when its heading text is only on that page. `lookup` skips index files, so they are not documents.
 
 ## API (FastAPI, 127.0.0.1:8000)
 

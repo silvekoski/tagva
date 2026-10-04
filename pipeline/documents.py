@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+INDEX_SUFFIX = ".index.json"
+
 PROJECT_KINDS = {
     "drawings": "drawing",
     "maintenance-reports": "maintenance_report",
@@ -22,7 +24,7 @@ def _entries(docs_dir, folder, kind):
             "url": "/documents/" + f.relative_to(docs_dir).as_posix(),
         }
         for f in sorted(folder.iterdir())
-        if f.is_file() and not f.name.startswith(".")
+        if f.is_file() and not f.name.startswith(".") and not f.name.endswith(INDEX_SUFFIX)
     ]
 
 
