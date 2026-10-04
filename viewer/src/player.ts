@@ -144,10 +144,9 @@ export class Player {
 
   sweepBoxes() {
     const sid = this.pano.sweep?.id;
-    if (!sid) return [];
-    const { file, showAll, selection, threshold } = this.state;
-    const selected = selection?.device;
-    const devices = showAll ? (file?.tags ?? []).flatMap((t) => t.devices) : selected ? [selected] : [];
+    const { file, showAll, threshold } = this.state;
+    if (!sid || !showAll) return [];
+    const devices = (file?.tags ?? []).flatMap((t) => t.devices);
     return [
       ...devices.flatMap((d) => {
         const kind = isReview(d, threshold) ? ("review" as const) : ("ok" as const);

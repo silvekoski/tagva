@@ -3,7 +3,6 @@ import type { FormEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -97,30 +96,6 @@ export function AppSidebar(p: AppSidebarProps) {
           <SidebarGroupLabel>Detection</SidebarGroupLabel>
           <SidebarGroupContent>
             <form onSubmit={submit} className="flex flex-col gap-3 px-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="project">Project</Label>
-                <Input
-                  id="project"
-                  name="project"
-                  autoComplete="off"
-                  spellCheck={false}
-                  required
-                  value={p.project}
-                  onChange={(e) => p.onProject(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="site">Site</Label>
-                <Input
-                  id="site"
-                  name="site"
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder={p.project.trim()}
-                  value={p.site}
-                  onChange={(e) => p.onSite(e.target.value)}
-                />
-              </div>
               <div className="grid gap-2">
                 <Button type="submit" disabled={p.busy === "run"}>
                   {p.busy === "run" ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Play aria-hidden="true" />}

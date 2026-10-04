@@ -1,4 +1,4 @@
-import { Boxes, Search, Table2 } from "lucide-react";
+import { Boxes, Images, Search, Table2 } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getRun, getScan, getTags, putTags, startRun } from "./api";
@@ -19,7 +19,10 @@ import type { Mode, Player, PlayerEvents, Selection } from "./player";
 import { isReview } from "./review";
 import type { Device, Manifest, Sweep, Tag, TagFile } from "./types";
 
+const DEFAULT_PROJECT = "VEO-DEMO";
+
 const DevicesDialog = lazy(() => import("./components/devices-dialog").then((m) => ({ default: m.DevicesDialog })));
+const DatasetDialog = lazy(() => import("./components/dataset-dialog").then((m) => ({ default: m.DatasetDialog })));
 const params = new URLSearchParams(location.search);
 const isMac = /Mac|iPhone|iPad/u.test(navigator.platform);
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -70,7 +73,7 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
   const [mode, setMode] = useState<Mode>("pano");
   const [sweep, setSweep] = useState<Sweep | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [project, setProject] = useState(params.get("project") ?? "");
+  const [project, setProject] = useState(params.get("project") || DEFAULT_PROJECT);
   const [site, setSite] = useState("");
   const [job, setJob] = useState<Job | null>(null);
   const [busy, setBusy] = useState<"run" | "detect" | null>(null);
@@ -78,6 +81,8 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
   const [tableUsed, setTableUsed] = useState(false);
+  const [datasetOpen, setDatasetOpen] = useState(false);
+  const [datasetUsed, setDatasetUsed] = useState(false);
   const statusTimer = useRef(0);
   const returnFocus = useRef<HTMLElement | null>(null);
   const pendingFocus = useRef<string | null>(null);
@@ -206,7 +211,6 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
     const name = project.trim();
     if (!name) {
       setJob({ text: "Enter a project label first." });
-      document.getElementById("project")?.focus();
       return;
     }
     setBusy("run");
@@ -261,7 +265,7 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
       const scores = found.map((x) => x.score.toFixed(2)).join(", ");
       const text =
         `Browser detection on ${s.id}: ${found.length} REX615 ${found.length === 1 ? "plate" : "plates"}${scores ? ` (${scores})` : ""} ` +
-        `above ${floor.toFixed(2)}, ${result.tiles} tiles in ${result.seconds.toFixed(1)} s with ${result.backend}. The boxes are cyan.`;
+        `above ${floor.toFixed(2)}, ${result.tiles} tiles in ${result.seconds.toFixed(1)} s with ${result.backend}. Turn on Show boxes to see them in cyan.`;
       setJob({ text, progress: 1 });
       toast.success(`Browser detection on ${s.id}: ${plural(found.length, "plate", "plates")}`, { id, description: text });
     } catch (err) {
@@ -377,6 +381,17 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
               <Table2 aria-hidden="true" />
               Devices
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDatasetUsed(true);
+                setDatasetOpen(true);
+              }}
+            >
+              <Images aria-hidden="true" />
+              Dataset
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setPaletteOpen(true)} aria-keyshortcuts={isMac ? "Meta+K" : "Control+K"}>
               <Search aria-hidden="true" />
               Search
@@ -421,6 +436,11 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
       {file && tableUsed && (
         <Suspense fallback={null}>
           <DevicesDialog open={tableOpen} onOpenChange={setTableOpen} file={file} threshold={threshold} onOpenDevice={(t, d) => select(t, d, true)} />
+        </Suspense>
+      )}
+      {datasetUsed && (
+        <Suspense fallback={null}>
+          <DatasetDialog open={datasetOpen} onOpenChange={setDatasetOpen} />
         </Suspense>
       )}
       <Toaster position="bottom-right" />
