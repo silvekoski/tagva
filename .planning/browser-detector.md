@@ -12,7 +12,7 @@ The output is `models/rex615.onnx` (37 MB, git ignored). The API serves it at `/
 
 ## Browser steps (`viewer/src/detect.ts`)
 
-1. "Detect in browser" takes the loaded equirect panorama texture of the current sweep (8192 x 4096).
+1. "Check this view" takes the loaded equirect panorama texture of the current sweep (8192 x 4096).
 2. WebGL renders the 36 tiles of `pipeline/tiles.py` (1280 px, 60 deg FOV, 12 yaws, pitches -30, 0 and +30 deg) with the same math as `pipeline/sphere.py`.
 3. onnxruntime-web 1.30 runs the model with WebGPU. When WebGPU is not available, it uses WebAssembly.
 4. Each tile: confidence 0.25 or more, NMS at IoU 0.7. The boxes go to the panorama with the border sampling of `tile_box_to_pano`, then the NMS of `nms_pano` (intersection over the smaller area 0.6, uncut boxes first).

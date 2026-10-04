@@ -1,5 +1,7 @@
-import { ChevronRight, CircleAlert, CircleCheck, Cpu, LoaderCircle, Play, ScanLine } from "lucide-react";
+import { ChevronRight, CircleAlert, CircleCheck, Cpu, LoaderCircle, Play } from "lucide-react";
 import type { FormEvent } from "react";
+import tagvaLogo from "@/assets/tagva-logo.svg";
+import veoLogo from "@/assets/veo-logo.svg";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -22,6 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 import type { Selection } from "@/player";
 import { deviceLabel, isReview } from "@/review";
 import type { Device, Manifest, Sweep, Tag, TagFile } from "@/types";
@@ -51,6 +54,17 @@ interface AppSidebarProps {
   selection: Selection | null;
   onSelect(tag: Tag, device?: Device): void;
   tagEmpty: string;
+}
+
+function Logo({ src, label, ratio, className }: { src: string; label: string; ratio: string; className: string }) {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className={cn("block", className)}
+      style={{ aspectRatio: ratio, mask: `url("${src}") center / contain no-repeat` }}
+    />
+  );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -86,9 +100,14 @@ export function AppSidebar(p: AppSidebarProps) {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-1">
-          <ScanLine aria-hidden="true" className="size-5 text-primary" />
-          <h1 className="text-sm font-semibold">REX615 scan player</h1>
+        <div className="flex flex-col items-start gap-1.5 px-2 py-1">
+          <h1>
+            <Logo src={tagvaLogo} label="Tagva" ratio="1692 / 579" className="h-8 bg-foreground" />
+          </h1>
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Logo src={veoLogo} label="VEO" ratio="561 / 121" className="h-2.5 bg-veo" />
+            hackathon project
+          </p>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -96,21 +115,21 @@ export function AppSidebar(p: AppSidebarProps) {
           <SidebarGroupLabel>Detection</SidebarGroupLabel>
           <SidebarGroupContent>
             <form onSubmit={submit} className="flex flex-col gap-3 px-2">
-              <div className="grid gap-2">
-                <Button type="submit" disabled={p.busy === "run"}>
+              <div className="grid gap-1">
+                <Button type="submit" disabled={p.busy === "run"} aria-describedby="run-hint">
                   {p.busy === "run" ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Play aria-hidden="true" />}
-                  Run detection
+                  Scan all positions
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={p.busy === "detect"}
-                  onClick={p.onDetect}
-                  title="Run the REX615 detector in this browser on the current panorama"
-                >
+                <p id="run-hint" className="mb-2 text-xs text-muted-foreground">
+                  Finds, reads and tags every device. Runs on the server.
+                </p>
+                <Button type="button" variant="outline" disabled={p.busy === "detect"} onClick={p.onDetect} aria-describedby="detect-hint">
                   {p.busy === "detect" ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Cpu aria-hidden="true" />}
-                  Detect in browser
+                  Check this view
                 </Button>
+                <p id="detect-hint" className="text-xs text-muted-foreground">
+                  Shows boxes on this panorama only. Runs in the browser.
+                </p>
               </div>
               <div role="status" aria-live="polite" className="flex flex-col gap-1.5 empty:hidden">
                 {p.job && (

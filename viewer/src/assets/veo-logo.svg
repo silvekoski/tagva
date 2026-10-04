@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="561" height="121" viewBox="0 0 561 121">
+  <title>Vectorized logo</title>
+  <g fill="#00AEEF">
+    <!-- V -->
+    <path d="M0 0H41L99 85L154 0H191L110 121H85Z"/>
+
+    <!-- E -->
+    <path d="M208 0H357V22H243V97H358V121H208Z"/>
+    <rect x="267" y="48" width="64" height="23"/>
+
+    <!-- O -->
+    <path fill-rule="evenodd" d="
+      M410 0H533
+      C551 0 561 9 561 27
+      V94
+      C561 112 551 121 533 121
+      H410
+      C392 121 382 112 382 94
+      V27
+      C382 9 392 0 410 0
+      Z
+
+      M417 22H526V97H417Z
+    "/>
+  </g>
+</svg>

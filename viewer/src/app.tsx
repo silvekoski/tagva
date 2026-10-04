@@ -316,7 +316,7 @@ function ScanPlayer({ manifest }: { manifest: Manifest }) {
     ? "Enter a project label to load its tags."
     : file
       ? "The tag file has no tags."
-      : `No tags for ${project.trim()} yet. Press Run detection.`;
+      : `No tags for ${project.trim()} yet. Press Scan all positions.`;
 
   return (
     <TooltipProvider>
