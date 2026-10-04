@@ -21,7 +21,7 @@ const KIND_LABELS: Record<string, string> = {
 const fmtPoint = (p: Point3 | null) => (p ? `${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}` : "None");
 const row = (label: string, value: Node | string) => [h("dt", {}, label), h("dd", {}, value)];
 
-export const deviceLabel = (d: Device) => d.name || `Unnamed ${d.device_type}`;
+export const deviceLabel = (d: Device) => d.name || d.device_type;
 
 export class Panel {
   selection: { tag: Tag; device?: Device } | null = null;
