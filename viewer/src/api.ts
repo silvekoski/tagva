@@ -1,4 +1,4 @@
-import type { Manifest, Point3, RunStatus, TagFile } from "./types";
+import type { Manifest, Point3, RunStatus, SynthSet, SynthSetSummary, TagFile } from "./types";
 
 export class ApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -52,3 +52,7 @@ export const getRun = (id: string) => request<RunStatus>(`/api/runs/${encodeURIC
 
 export const raycast = (sweep: string, u: number, v: number) =>
   request<{ anchor: Point3 | null }>(`/api/raycast?sweep=${encodeURIComponent(sweep)}&u=${u.toFixed(1)}&v=${v.toFixed(1)}`);
+
+export const getSynthSets = () => request<{ sets: SynthSetSummary[] }>("/api/synth");
+
+export const getSynthSet = (name: string) => request<SynthSet>(`/api/synth/${encodeURIComponent(name)}`);

@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import os
@@ -7,9 +8,11 @@ from functools import cache, lru_cache
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -21,6 +24,7 @@ from pipeline.run import MIN_CONFIDENCE, TILE_CONFIDENCE, run_pipeline
 ROOT = Path(__file__).resolve().parent.parent
 CORS_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
 RAYCAST_BOX = 12.0
+THUMB_SIZE = 320
 log = logging.getLogger("pipeline.api")
 
 
@@ -40,6 +44,46 @@ def default_runner(**kwargs):
     return run_pipeline(**kwargs, detector=_detector(str(weights), weights.stat().st_mtime))
 
 
+def _r(v, n=1):
+    return None if v is None else round(float(v), n)
+
+
+def synth_image(root, split, image):
+    stem = image.stem
+    width, height = Image.open(image).size
+    boxes = []
+    label = root / "labels" / split / f"{stem}.txt"
+    for line in label.read_text().splitlines() if label.is_file() else []:
+        parts = line.split()
+        if len(parts) != 5:
+            continue
+        cx, cy, w, h = (float(v) for v in parts[1:])
+        boxes.append([_r((cx - w / 2) * width), _r((cy - h / 2) * height), _r((cx + w / 2) * width), _r((cy + h / 2) * height)])
+    item = {"path": f"/synth/{root.name}/images/{split}/{image.name}", "thumb": f"/api/synth/{root.name}/thumbs/{split}/{image.name}", "name": stem, "split": split, "width": width, "height": height,
+            "boxes": boxes}
+    meta = root / "meta" / split / f"{stem}.json"
+    if meta.is_file():
+        m = json.loads(meta.read_text())
+        camera = m.get("camera") or [None, None, None]
+        item.update(dark=bool(m.get("dark")), fov_deg=m.get("fov_deg"), camera_z=_r(camera[2], 2), jpeg_quality=m.get("jpeg_quality"),
+                    plates=[{"kind": p.get("kind"), "labeled": bool(p.get("labeled")), "box": [_r(v) for v in p["box"]] if p.get("box") else None,
+                             "width_px": _r(p.get("width_px")), "distance_m": _r(p.get("distance_m"), 2),
+                             "off_normal_deg": _r(p.get("off_normal_deg")), "visible": _r(p.get("visible"), 2),
+                             "drop_reason": p.get("drop_reason")} for p in m.get("plates", [])])
+    return item
+
+
+def synth_images(root):
+    return sorted((split, image) for split in ("train", "val") for image in (root / "images" / split).glob("*.jpg"))
+
+
+@lru_cache(maxsize=8)
+def synth_set(root, stamp):
+    images = [synth_image(root, split, image) for split, image in synth_images(root)]
+    profile = next((json.loads(m.read_text()).get("profile") for m in sorted((root / "meta").glob("*/*.json"))[:1]), None)
+    return {"name": root.name, "profile": profile, "count": len(images), "images": images}
+
+
 class RunRequest(BaseModel):
     project: str
     site: str | None = None
@@ -49,14 +93,16 @@ class RunRequest(BaseModel):
     min_confidence: float = Field(MIN_CONFIDENCE, ge=0, le=1)
 
 
-def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_dir=None, runner=default_runner):
+def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_dir=None, synth_dir=None, runner=default_runner):
     scan_dir = Path(scan_dir or env_path("REX_SCAN_DIR", "data/scan"))
     e57_path = Path(e57_path or env_path("REX_E57", "cloud_0.e57"))
     weights = Path(weights or env_path("REX_WEIGHTS", "models/rex615.pt"))
     tags_dir = Path(tags_dir or env_path("REX_TAGS_DIR", "data/tags"))
     docs_dir = Path(docs_dir or env_path("REX_DOCS_DIR", "docs"))
+    synth_dir = Path(synth_dir or env_path("REX_SYNTH_DIR", "data/synth"))
 
     app = FastAPI(title="REX615 pipeline", docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(GZipMiddleware, minimum_size=4096)
     app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_methods=["*"], allow_headers=["*"])
     runs, lock = {}, threading.Lock()
 
@@ -152,6 +198,43 @@ def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_d
         anchor, _ = box_anchor(range_grid(sweep), np.array(s["rotation"]), np.array(s["position"]), box, W, H)
         return {"anchor": tagfile.point(anchor)}
 
+    def synth_roots():
+        return {p.name: p for p in sorted(synth_dir.iterdir()) if (p / "images").is_dir()} if synth_dir.is_dir() else {}
+
+    def synth_stamp(root):
+        return tuple((root / kind / split).stat().st_mtime_ns if (root / kind / split).is_dir() else 0
+                     for kind in ("images", "labels", "meta") for split in ("train", "val"))
+
+    @app.get("/api/synth")
+    def list_synth():
+        sets = []
+        for root in synth_roots().values():
+            data = synth_set(root, synth_stamp(root))
+            splits = {s: sum(i["split"] == s for i in data["images"]) for s in ("train", "val")}
+            sets.append({"name": data["name"], "profile": data["profile"], "count": data["count"], **splits})
+        return {"sets": sets}
+
+    @app.get("/api/synth/{name}")
+    def get_synth(name: str):
+        root = synth_roots().get(name)
+        if root is None:
+            raise HTTPException(404, "unknown synthetic set")
+        return synth_set(root, synth_stamp(root))
+
+    @app.get("/api/synth/{name}/thumbs/{split}/{file}")
+    def get_synth_thumb(name: str, split: str, file: str):
+        root = synth_roots().get(name)
+        path = root / "images" / split / file if root and split in ("train", "val") and Path(file).name == file else None
+        if path is None or path.suffix != ".jpg" or not path.is_file():
+            raise HTTPException(404, "unknown image")
+        with Image.open(path) as im:
+            im.draft("RGB", (THUMB_SIZE, THUMB_SIZE))
+            im = im.convert("RGB")
+            im.thumbnail((THUMB_SIZE, THUMB_SIZE))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=80)
+        return Response(buf.getvalue(), media_type="image/jpeg", headers={"Cache-Control": "max-age=3600"})
+
     @app.get("/models/rex615.onnx")
     def onnx_model():
         path = weights.with_suffix(".onnx")
@@ -161,6 +244,7 @@ def create_app(scan_dir=None, e57_path=None, weights=None, tags_dir=None, docs_d
 
     app.mount("/scan", StaticFiles(directory=scan_dir, check_dir=False), name="scan")
     app.mount("/documents", StaticFiles(directory=docs_dir, check_dir=False), name="documents")
+    app.mount("/synth", StaticFiles(directory=synth_dir, check_dir=False), name="synth")
     return app
 
 

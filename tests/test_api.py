@@ -1,3 +1,4 @@
+import io
 import json
 import threading
 import time
@@ -152,3 +153,39 @@ def test_onnx_model_route(tmp_path):
     (tmp_path / "rex615.onnx").write_bytes(b"onnx")
     r = client.get("/models/rex615.onnx")
     assert r.status_code == 200 and r.content == b"onnx"
+
+
+def test_synth_sets(tmp_path):
+    from PIL import Image
+
+    root = tmp_path / "synth" / "local-x"
+    for kind in ("images", "labels", "meta"):
+        for split in ("train", "val"):
+            (root / kind / split).mkdir(parents=True)
+    (root / "render.log").write_text("log")
+    (tmp_path / "synth" / "notes").mkdir()
+    Image.new("RGB", (200, 100)).save(root / "images" / "train" / "a.jpg")
+    Image.new("RGB", (200, 100)).save(root / "images" / "val" / "b.jpg")
+    (root / "labels" / "train" / "a.txt").write_text("0 0.5 0.5 0.2 0.4\n")
+    (root / "labels" / "val" / "b.txt").write_text("")
+    plate = {"kind": "rex615", "labeled": True, "box": [80, 30, 120, 70], "width_px": 40, "distance_m": 2.345, "off_normal_deg": 12.34,
+             "visible": 0.9, "drop_reason": None}
+    meta = {"profile": "base", "dark": True, "fov_deg": 60.0, "camera": [0, 0, 1.5], "jpeg_quality": 80, "plates": [plate]}
+    (root / "meta" / "train" / "a.json").write_text(json.dumps(meta))
+    client = TestClient(create_app(scan_dir=tmp_path, tags_dir=tmp_path, docs_dir=tmp_path, synth_dir=tmp_path / "synth"))
+
+    assert client.get("/api/synth").json() == {"sets": [{"name": "local-x", "profile": "base", "count": 2, "train": 1, "val": 1}]}
+    data = client.get("/api/synth/local-x").json()
+    a, b = data["images"]
+    assert a["path"] == "/synth/local-x/images/train/a.jpg" and (a["width"], a["height"]) == (200, 100)
+    assert a["boxes"] == [[80.0, 30.0, 120.0, 70.0]]
+    assert a["dark"] is True and a["camera_z"] == 1.5 and a["plates"][0]["distance_m"] == 2.35
+    assert b["split"] == "val" and b["boxes"] == [] and "plates" not in b
+    assert client.get("/api/synth/notes").status_code == 404
+    assert client.get("/api/synth/..").status_code == 404
+    assert client.get("/synth/local-x/images/train/a.jpg").status_code == 200
+    r = client.get(a["thumb"])
+    assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg"
+    assert Image.open(io.BytesIO(r.content)).size == (200, 100)
+    assert client.get("/api/synth/local-x/thumbs/test/a.jpg").status_code == 404
+    assert client.get("/api/synth/local-x/thumbs/train/c.jpg").status_code == 404

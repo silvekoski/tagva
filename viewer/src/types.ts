@@ -77,3 +77,46 @@ export interface RunStatus {
   progress: number;
   message: string;
 }
+
+export type BoxXyxy = [number, number, number, number];
+
+export interface SynthPlate {
+  kind: string;
+  labeled: boolean;
+  box: BoxXyxy | null;
+  width_px: number | null;
+  distance_m: number | null;
+  off_normal_deg: number | null;
+  visible: number | null;
+  drop_reason: string | null;
+}
+
+export interface SynthImage {
+  path: string;
+  thumb: string;
+  name: string;
+  split: "train" | "val";
+  width: number;
+  height: number;
+  boxes: BoxXyxy[];
+  dark?: boolean;
+  fov_deg?: number;
+  camera_z?: number;
+  jpeg_quality?: number;
+  plates?: SynthPlate[];
+}
+
+export interface SynthSetSummary {
+  name: string;
+  profile: string | null;
+  count: number;
+  train: number;
+  val: number;
+}
+
+export interface SynthSet {
+  name: string;
+  profile: string | null;
+  count: number;
+  images: SynthImage[];
+}

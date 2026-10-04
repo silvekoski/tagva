@@ -14,7 +14,7 @@ const embeddable: ProxyOptions = {
       res.headers["cross-origin-resource-policy"] = "same-origin";
     }),
 };
-const proxy = { "/api": api, "/scan": api, "/documents": embeddable, "/models": api };
+const proxy = { "/api": api, "/scan": api, "/documents": embeddable, "/models": api, "/synth": api };
 
 const tweakcnPreview = (): Plugin => ({
   name: "tweakcn-live-preview",
