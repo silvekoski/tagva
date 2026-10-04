@@ -39,6 +39,20 @@ export function PdfMark({ className = "h-12 w-10" }: { className?: string }) {
   );
 }
 
+function PdfCover({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <PdfMark className="h-24 w-[4.5rem]" />;
+  return (
+    <img
+      src={url.replace(/\.pdf$/iu, ".cover.png")}
+      alt=""
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="h-24 w-[4.5rem] shrink-0 rounded-sm border bg-white object-cover object-top shadow-sm"
+    />
+  );
+}
+
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-5">
@@ -124,7 +138,7 @@ export function DocumentsTab({ docs, allDocs, deviceType, project }: DocumentsTa
                       rel="noopener"
                       className="flex items-center gap-3 rounded-lg border bg-background/40 p-3 outline-none hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <PdfMark />
+                      <PdfCover url={doc.url} />
                       <span className="min-w-0 flex-1">
                         <span className="block font-medium break-words first-letter:uppercase">{doc.title}</span>
                         <span className="block text-xs text-muted-foreground">

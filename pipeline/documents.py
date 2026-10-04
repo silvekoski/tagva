@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 INDEX_SUFFIX = ".index.json"
+COVER_SUFFIX = ".cover.png"
 
 PROJECT_KINDS = {
     "drawings": "drawing",
@@ -24,7 +25,7 @@ def _entries(docs_dir, folder, kind):
             "url": "/documents/" + f.relative_to(docs_dir).as_posix(),
         }
         for f in sorted(folder.iterdir())
-        if f.is_file() and not f.name.startswith(".") and not f.name.endswith(INDEX_SUFFIX)
+        if f.is_file() and not f.name.startswith(".") and not f.name.endswith((INDEX_SUFFIX, COVER_SUFFIX))
     ]
 
 
